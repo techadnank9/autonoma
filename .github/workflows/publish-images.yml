@@ -1,0 +1,166 @@
+name: Publish Docker Images
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+jobs:
+  build-and-push:
+    name: ${{ matrix.name }}
+    if: github.repository == 'Autonoma-AI/autonoma'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: API
+            image: api
+            dockerfile: apps/api/Dockerfile
+            turbo-filter: "@autonoma/api..."
+            prepare: mkdir -p pruned && cp -r apps/api/.output pruned/.output
+            context: ./pruned
+
+          - name: UI
+            image: ui
+            dockerfile: apps/ui/Dockerfile
+            turbo-filter: "@autonoma/ui..."
+            prepare: |
+              mkdir -p pruned
+              cp apps/ui/nginx.conf.template pruned/nginx.conf.template
+              cp -r apps/ui/dist pruned/dist
+            context: ./pruned
+
+          - name: Execution Agent Web
+            image: execution-agent-web
+            dockerfile: apps/engine-web/Dockerfile
+            turbo-filter: ""
+            prepare: ""
+            context: .
+
+          - name: Execution Agent Mobile
+            image: execution-agent-mobile
+            dockerfile: apps/engine-mobile/Dockerfile
+            turbo-filter: "@autonoma/engine-mobile..."
+            prepare: mkdir -p pruned && cp -r apps/engine-mobile/dist pruned/dist
+            context: ./pruned
+
+          - name: Scenario
+            image: scenario
+            dockerfile: apps/jobs/scenario/Dockerfile
+            turbo-filter: "@autonoma/job-scenario..."
+            prepare: mkdir -p pruned && cp -r apps/jobs/scenario/dist pruned/dist
+            context: ./pruned
+
+          - name: Generation Assigner
+            image: generation-assigner
+            dockerfile: apps/jobs/generation-assigner/Dockerfile
+            turbo-filter: "@autonoma/generation-assigner..."
+            prepare: mkdir -p pruned && cp -r apps/jobs/generation-assigner/dist pruned/dist
+            context: ./pruned
+
+          - name: Generation Reviewer
+            image: generation-reviewer
+            dockerfile: apps/jobs/generation-reviewer/Dockerfile
+            turbo-filter: "@autonoma/generation-reviewer..."
+            prepare: |
+              mkdir -p pruned/dist
+              cp -r apps/jobs/generation-reviewer/dist/* pruned/dist/
+              cp apps/jobs/generation-reviewer/src/review-prompt.md pruned/dist/
+            context: ./pruned
+
+          - name: Replay Reviewer
+            image: replay-reviewer
+            dockerfile: apps/jobs/replay-reviewer/Dockerfile
+            turbo-filter: "@autonoma/replay-reviewer..."
+            prepare: |
+              mkdir -p pruned/dist
+              cp -r apps/jobs/replay-reviewer/dist/* pruned/dist/
+              cp apps/jobs/replay-reviewer/src/review-prompt.md pruned/dist/
+            context: ./pruned
+
+          - name: Diffs
+            image: diffs
+            dockerfile: apps/jobs/diffs/Dockerfile
+            turbo-filter: "@autonoma/job-diffs..."
+            prepare: mkdir -p pruned && cp -r apps/jobs/diffs/dist pruned/dist
+            context: ./pruned
+
+          - name: Run Completion Notification
+            image: run-completion-notification
+            dockerfile: apps/jobs/run-completion-notification/Dockerfile
+            turbo-filter: "@autonoma/job-run-completion-notification..."
+            prepare: mkdir -p pruned && cp -r apps/jobs/run-completion-notification/dist pruned/dist
+            context: ./pruned
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        if: matrix.turbo-filter != ''
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        if: matrix.turbo-filter != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        if: matrix.turbo-filter != ''
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        if: matrix.turbo-filter != ''
+        run: pnpm turbo run build --filter=${{ matrix.turbo-filter }}
+
+      - name: Prepare bundle
+        if: matrix.prepare != ''
+        run: ${{ matrix.prepare }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ${{ matrix.dockerfile }}
+          context: ${{ matrix.context }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
