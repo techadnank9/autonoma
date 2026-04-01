@@ -1,6 +1,6 @@
 import posthog, { DisplaySurveyType, SurveyPosition } from "posthog-js";
 
-const FEEDBACK_SURVEY_ID = "019d45e1-6880-0000-453b-2ba629c7c5cb";
+const FEEDBACK_SURVEY_ID = "019d4b13-3363-0000-8cce-47d6b098a42e";
 
 export function openFeedbackSurvey() {
   posthog.displaySurvey(FEEDBACK_SURVEY_ID, {
