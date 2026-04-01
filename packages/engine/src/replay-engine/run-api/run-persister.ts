@@ -33,7 +33,7 @@ export interface RunData {
         mainBranch: {
             deployment: {
                 webDeployment: { url: string; file: string } | null;
-                mobileDeployment: { packageUrl: string; photo: string } | null;
+                mobileDeployment: { packageUrl: string; packageName: string; photo: string } | null;
             } | null;
         } | null;
     };

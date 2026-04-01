@@ -5,7 +5,10 @@ import { defineConfig } from "tsup";
 const nodeBuiltins = [...builtinModules, ...builtinModules.map((m) => `node:${m}`)];
 
 export default defineConfig({
-    entry: { index: "src/execution-agent/generation-api/run-generation-job.ts" },
+    entry: {
+        index: "src/execution-agent/generation-api/run-generation-job.ts",
+        "replay-job": "src/replay/run-replay-job.ts",
+    },
     format: ["esm"],
     target: "node24",
     outDir: "dist",

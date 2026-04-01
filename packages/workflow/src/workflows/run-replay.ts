@@ -3,6 +3,7 @@ import { Architecture } from "@autonoma/types";
 import { DagBuilder } from "../k8s/argo";
 import { getK8sClient } from "../k8s/k8s-client";
 import { replayReviewerTemplate } from "./replay-reviewer/replay-reviewer-template";
+import { runReplayMobileTemplate } from "./replay/run-replay-mobile";
 import { runReplayWebTemplate } from "./replay/run-replay-web";
 import { scenarioDownTemplate } from "./scenario/scenario-down.template";
 import { scenarioUpTemplate } from "./scenario/scenario-up.template";
@@ -20,14 +21,12 @@ export async function triggerRunWorkflow({
     agentVersion,
     scenarioId,
 }: TriggerRunWorkflowParams): Promise<void> {
-    if (architecture !== Architecture.web) {
-        throw new Error(`Unsupported architecture for replay: ${architecture}`);
-    }
-
     logger.info("Building run replay workflow", { runId, architecture, agentVersion, scenarioId });
 
     const dag = new DagBuilder("main", {});
-    const replayTemplate = dag.addTemplate(await runReplayWebTemplate());
+    const replayTemplate = dag.addTemplate(
+        architecture === Architecture.web ? await runReplayWebTemplate() : await runReplayMobileTemplate(),
+    );
     const reviewTemplate = dag.addTemplate(await replayReviewerTemplate());
 
     if (scenarioId != null) {
