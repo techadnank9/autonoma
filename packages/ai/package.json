@@ -1,0 +1,41 @@
+{
+    "name": "@autonoma/ai",
+    "version": "1.0.0",
+    "description": "",
+    "keywords": [],
+    "license": "ISC",
+    "author": "",
+    "type": "module",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts",
+        "./env": "./src/env.ts",
+        "./evaluation": "./evals/index.ts"
+    },
+    "scripts": {
+        "eval": "vitest",
+        "lint-files": "oxlint --fix",
+        "lint": "pnpm lint-files .",
+        "fmt": "oxfmt --write src/",
+        "build": "tsc",
+        "typecheck": "tsc --noEmit",
+        "detect-object": "tsx --env-file=.env scripts/detect-object.ts"
+    },
+    "dependencies": {
+        "@ai-sdk/google": "catalog:",
+        "@ai-sdk/groq": "catalog:",
+        "@autonoma/errors": "workspace:*",
+        "@autonoma/image": "workspace:*",
+        "@autonoma/logger": "workspace:*",
+        "@google/genai": "^1.42.0",
+        "@openrouter/ai-sdk-provider": "^2.2.3",
+        "@t3-oss/env-core": "catalog:",
+        "ai": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "dotenv": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    }
+}

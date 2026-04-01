@@ -1,0 +1,237 @@
+---
+interface SidebarLink {
+    label: string
+    slug: string
+}
+
+interface SidebarGroup {
+    label: string
+    items: (SidebarLink | SidebarSubGroup)[]
+}
+
+interface SidebarSubGroup {
+    label: string
+    collapsed?: boolean
+    items: SidebarLink[]
+}
+
+interface Props {
+    currentSlug: string
+}
+
+const { currentSlug } = Astro.props
+
+const sidebar: SidebarGroup[] = [
+    {
+        label: "Getting Started",
+        items: [
+            { label: "Introduction", slug: "" },
+        ],
+    },
+    {
+        label: "Test Planner",
+        items: [
+            { label: "Overview", slug: "test-planner" },
+            { label: "Step 1: Knowledge Base", slug: "test-planner/step-1-knowledge-base" },
+            { label: "Step 2: Scenarios", slug: "test-planner/step-2-scenarios" },
+            { label: "Step 3: E2E Tests", slug: "test-planner/step-3-e2e-tests" },
+            { label: "Step 4: Implement Scenarios", slug: "test-planner/step-4-implement-scenarios" },
+        ],
+    },
+    {
+        label: "Setup & Teardown",
+        items: [
+            { label: "Environment Factory", slug: "guides/environment-factory" },
+            {
+                label: "Examples",
+                collapsed: true,
+                items: [
+                    { label: "Next.js", slug: "examples/nextjs" },
+                    { label: "React + Vite", slug: "examples/react-vite" },
+                    { label: "Elixir/Phoenix", slug: "examples/elixir-phoenix" },
+                    { label: "TanStack Start", slug: "examples/tanstack-start" },
+                ],
+            },
+        ],
+    },
+]
+
+function isSidebarLink(item: SidebarLink | SidebarSubGroup): item is SidebarLink {
+    return "slug" in item
+}
+
+function isActive(slug: string): boolean {
+    return currentSlug === slug
+}
+
+function groupHasActive(items: SidebarLink[]): boolean {
+    return items.some((item) => isActive(item.slug))
+}
+
+function linkHref(slug: string): string {
+    return slug === "" ? "/" : `/${slug}/`
+}
+---
+
+<div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+<nav id="sidebar" class="sidebar" aria-label="Documentation">
+    <div class="sidebar-content">
+        {sidebar.map((group) => (
+            <div class="sidebar-group">
+                <div class="sidebar-group-label">{group.label}</div>
+                <ul class="sidebar-list">
+                    {group.items.map((item) =>
+                        isSidebarLink(item) ? (
+                            <li>
+                                <a
+                                    href={linkHref(item.slug)}
+                                    class:list={["sidebar-link", { active: isActive(item.slug) }]}
+                                    aria-current={isActive(item.slug) ? "page" : undefined}
+                                >
+                                    {item.label}
+                                </a>
+                            </li>
+                        ) : (
+                            <li>
+                                <details open={groupHasActive(item.items) || !item.collapsed}>
+                                    <summary class="sidebar-subgroup-label">{item.label}</summary>
+                                    <ul class="sidebar-sublist">
+                                        {item.items.map((sub) => (
+                                            <li>
+                                                <a
+                                                    href={linkHref(sub.slug)}
+                                                    class:list={["sidebar-link", { active: isActive(sub.slug) }]}
+                                                    aria-current={isActive(sub.slug) ? "page" : undefined}
+                                                >
+                                                    {sub.label}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </details>
+                            </li>
+                        ),
+                    )}
+                </ul>
+            </div>
+        ))}
+    </div>
+</nav>
+
+<style>
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 39;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .sidebar-backdrop.open {
+        display: block;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: var(--nav-height);
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        z-index: 40;
+        border-right: 1px solid var(--border-dim);
+        background: var(--surface-void);
+        overflow-y: auto;
+        padding: 1.5rem 0;
+    }
+
+    .sidebar-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .sidebar-group-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+        padding: 0 1.25rem;
+        margin-bottom: 0.375rem;
+    }
+
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-link {
+        display: block;
+        padding: 0.375rem 1.25rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.1s ease;
+        border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover {
+        color: var(--text-primary);
+        background: var(--surface-base);
+    }
+
+    .sidebar-link.active {
+        color: var(--primary);
+        border-left-color: var(--primary);
+        background: var(--accent-dim);
+        font-weight: 500;
+    }
+
+    .sidebar-subgroup-label {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 1.25rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+    }
+
+    .sidebar-subgroup-label::-webkit-details-marker {
+        display: none;
+    }
+
+    .sidebar-subgroup-label::before {
+        content: "\25B8";
+        font-size: 0.625rem;
+        transition: transform 0.15s ease;
+    }
+
+    details[open] > .sidebar-subgroup-label::before {
+        transform: rotate(90deg);
+    }
+
+    .sidebar-sublist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-sublist .sidebar-link {
+        padding-left: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+    }
+</style>

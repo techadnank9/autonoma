@@ -1,0 +1,83 @@
+---
+interface Props {
+    previous?: { slug: string; title: string }
+    next?: { slug: string; title: string }
+}
+
+const { previous, next } = Astro.props
+
+function linkHref(slug: string): string {
+    return slug === "" ? "/" : `/${slug}/`
+}
+---
+
+{(previous || next) && (
+    <nav class="prev-next" aria-label="Page navigation">
+        {previous ? (
+            <a href={linkHref(previous.slug)} class="prev-next-link prev">
+                <span class="prev-next-label">Previous</span>
+                <span class="prev-next-title">{previous.title}</span>
+            </a>
+        ) : (
+            <div />
+        )}
+        {next ? (
+            <a href={linkHref(next.slug)} class="prev-next-link next">
+                <span class="prev-next-label">Next</span>
+                <span class="prev-next-title">{next.title}</span>
+            </a>
+        ) : (
+            <div />
+        )}
+    </nav>
+)}
+
+<style>
+    .prev-next {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-dim);
+    }
+
+    .prev-next-link {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 1rem;
+        border: 1px solid var(--border-dim);
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .prev-next-link:hover {
+        border-color: var(--border-mid);
+        background: var(--surface-base);
+    }
+
+    .prev-next-link.next {
+        text-align: right;
+    }
+
+    .prev-next-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+    }
+
+    .prev-next-title {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--primary);
+    }
+
+    @media (max-width: 640px) {
+        .prev-next {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

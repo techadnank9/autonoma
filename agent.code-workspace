@@ -1,0 +1,58 @@
+{
+    "folders": [
+        {
+            "path": ".",
+            "name": "root",
+        },
+        {
+            "name": "ui",
+            "path": "apps/ui",
+        },
+        {
+            "name": "pond-ui",
+            "path": "packages/pond-ui",
+        },
+        {
+            "name": "api",
+            "path": "apps/api",
+        },
+        {
+            "name": "database",
+            "path": "packages/db",
+        },
+        {
+            "name": "engine",
+            "path": "packages/engine",
+        },
+        {
+            "name": "engine-web",
+            "path": "apps/engine-web",
+        },
+        {
+            "name": "engine-mobile",
+            "path": "apps/engine-mobile",
+        },
+        {
+            "name": "generation-reviewer",
+            "path": "apps/jobs/generation-reviewer",
+        },
+    ],
+    "settings": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "[typescriptreact]": {
+            "editor.defaultFormatter": "biomejs.biome",
+        },
+        "[javascript]": {
+            "editor.defaultFormatter": "biomejs.biome",
+        },
+        "[typescript]": {
+            "editor.defaultFormatter": "biomejs.biome",
+        },
+        "[javascriptreact]": {
+            "editor.defaultFormatter": "biomejs.biome",
+        },
+        "[json]": {
+            "editor.defaultFormatter": "biomejs.biome",
+        },
+    },
+}

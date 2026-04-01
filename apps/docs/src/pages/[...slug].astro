@@ -1,0 +1,57 @@
+---
+import { render } from "astro:content"
+import DocsLayout from "../layouts/DocsLayout.astro"
+import { getOrderedDocs, withNavigation } from "../lib/llms/docs-collection"
+
+export async function getStaticPaths() {
+    const docs = await getOrderedDocs()
+    const docsWithNav = withNavigation(docs)
+
+    return docsWithNav.map((doc) => ({
+        params: { slug: doc.slug === "" ? undefined : doc.slug },
+        props: {
+            doc,
+            previous: doc.previous,
+            next: doc.next,
+        },
+    }))
+}
+
+const { doc, previous, next } = Astro.props
+const { Content, headings } = await render(doc.entry)
+
+// Load raw markdown for "Copy as markdown" button
+const rawModules = import.meta.glob<string>("../content/docs/**/*.{md,mdx}", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+})
+
+function pathToSlug(path: string): string {
+    const base = path.replace(/^\.\.\/content\/docs\//, "").replace(/\.(md|mdx)$/, "")
+    if (base === "index") return ""
+    if (base.endsWith("/index")) return base.replace(/\/index$/, "")
+    return base
+}
+
+let rawMarkdown: string | undefined
+for (const [path, content] of Object.entries(rawModules)) {
+    if (typeof content !== "string") continue
+    if (pathToSlug(path) === doc.slug) {
+        rawMarkdown = content
+        break
+    }
+}
+---
+
+<DocsLayout
+    title={doc.title}
+    description={doc.description}
+    headings={headings}
+    previous={previous}
+    next={next}
+    currentSlug={doc.slug}
+    rawMarkdown={rawMarkdown}
+>
+    <Content />
+</DocsLayout>

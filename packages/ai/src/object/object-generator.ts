@@ -1,0 +1,56 @@
+import { external } from "@autonoma/errors";
+import { Output, type ToolSet, generateText, stepCountIs } from "ai";
+import type z from "zod";
+import type { LanguageModel } from "../registry/model-registry";
+import { type RetryConfig, buildRetry } from "./retry";
+import { type ObjectGenerationParams, buildUserMessages } from "./user-messages";
+import { InvalidVideoInputError, modelSupportsVideo } from "./video/video-input";
+
+export interface ObjectGeneratorConfig<TResult> {
+    model: LanguageModel;
+    systemPrompt?: string;
+    schema: z.ZodType<TResult>;
+    tools?: ToolSet;
+
+    /** Number of retries to attempt to generate the object. Defaults to 5. */
+    retry?: RetryConfig;
+}
+
+export class ObjectGenerationFailedError extends Error {
+    constructor(cause: Error) {
+        super("There was an error generating the object", { cause });
+    }
+}
+
+export class ObjectGenerator<TResult> {
+    private readonly retryOperation?: <T>(operation: () => Promise<T>) => Promise<T>;
+
+    constructor(private readonly config: ObjectGeneratorConfig<TResult>) {
+        this.retryOperation = buildRetry(config.retry ?? { maxRetries: 5, initialDelayInMs: 100, backoffFactor: 2 });
+    }
+
+    async generate(params: ObjectGenerationParams): Promise<TResult> {
+        const { model, systemPrompt, schema, tools } = this.config;
+
+        if (params.video != null && !modelSupportsVideo(model)) throw new InvalidVideoInputError();
+
+        const operation = async () => {
+            const generationResult = await generateText({
+                model,
+                system: systemPrompt,
+                output: Output.object({ schema }),
+                messages: buildUserMessages(params),
+                maxRetries: 0,
+                experimental_telemetry: { isEnabled: true },
+                ...(tools && { tools, stopWhen: stepCountIs(5) }),
+            });
+
+            // Strip null bytes (\u0000) from AI responses — PostgreSQL JSON columns reject them
+            return JSON.parse(JSON.stringify(generationResult.output).replaceAll("\\u0000", ""));
+        };
+
+        return external(() => (this.retryOperation != null ? this.retryOperation(operation) : operation()), {
+            wrapper: (error) => new ObjectGenerationFailedError(error),
+        });
+    }
+}

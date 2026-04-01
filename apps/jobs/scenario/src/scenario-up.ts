@@ -1,0 +1,37 @@
+import { writeFile } from "node:fs/promises";
+import type { PrismaClient } from "@autonoma/db";
+import { GenerationSubject, RunSubject, type ScenarioManager, type ScenarioSubject } from "@autonoma/scenario";
+
+const INSTANCE_ID_OUTPUT_PATH = "/tmp/scenario-instance-id";
+
+export interface ScenarioUpParams {
+    type: "run" | "generation";
+    entityId: string;
+}
+
+export interface ScenarioUpDeps {
+    db: PrismaClient;
+    manager: ScenarioManager;
+}
+
+export async function scenarioUp(params: ScenarioUpParams, deps: ScenarioUpDeps): Promise<void> {
+    const { type, entityId } = params;
+    const { db, manager } = deps;
+
+    const subject = createSubject(type, db, entityId);
+    const scenarioId = await subject.getScenarioId();
+    const instance = await manager.up(subject, scenarioId);
+
+    if (instance.status === "UP_FAILED") {
+        throw new Error(
+            `Scenario up failed: instanceId=${instance.id}, lastError=${JSON.stringify(instance.lastError)}`,
+        );
+    }
+
+    await writeFile(INSTANCE_ID_OUTPUT_PATH, instance.id, "utf-8");
+}
+
+function createSubject(type: "run" | "generation", db: PrismaClient, entityId: string): ScenarioSubject {
+    if (type === "generation") return new GenerationSubject(db, entityId);
+    return new RunSubject(db, entityId);
+}

@@ -1,0 +1,43 @@
+{
+    "name": "@autonoma/engine-mobile",
+    "version": "0.0.1",
+    "private": true,
+    "description": "Appium-based mobile engine for the Autonoma testing platform",
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "build": "tsup",
+        "typecheck": "tsc --noEmit",
+        "lint": "oxlint --fix src/",
+        "fmt": "oxfmt --write src/",
+        "test": "vitest run --passWithNoTests",
+        "dev": "tsx --env-file=../../.env src/execution-agent/local-dev/run-execution.ts",
+        "run-generation": "tsx --env-file=../../.env src/execution-agent/generation-api/run-generation-job.ts"
+    },
+    "dependencies": {
+        "@autonoma/ai": "workspace:*",
+        "@autonoma/db": "workspace:*",
+        "@autonoma/emulator": "workspace:*",
+        "@autonoma/engine": "workspace:*",
+        "@autonoma/image": "workspace:*",
+        "@autonoma/logger": "workspace:*",
+        "@autonoma/storage": "workspace:*",
+        "@autonoma/types": "workspace:*",
+        "@sentry/node": "catalog:",
+        "@t3-oss/env-core": "catalog:",
+        "dotenv": "catalog:",
+        "mjpeg-consumer": "^2.0.0",
+        "webdriverio": "^9.0.0",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@ai-sdk/google": "catalog:",
+        "@types/node": "catalog:",
+        "tsup": "^8.5.1",
+        "tsx": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    }
+}

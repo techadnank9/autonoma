@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": "src",
+        "allowImportingTsExtensions": true,
+        "plugins": [
+            {
+                "name": "workflow"
+            }
+        ]
+    },
+    "include": ["src"]
+}

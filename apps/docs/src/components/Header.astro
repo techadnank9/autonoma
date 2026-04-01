@@ -1,0 +1,108 @@
+---
+---
+
+<header class="docs-header">
+    <div class="header-left">
+        <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+        </button>
+        <a href="/" class="header-logo" aria-label="Autonoma Docs Home">
+            <img src="/logo.svg" alt="Autonoma" class="logo-img" />
+        </a>
+    </div>
+
+    <nav class="header-nav">
+        <a href="https://www.getautonoma.com" class="header-link" target="_blank" rel="noopener">
+            Website
+        </a>
+        <a href="https://www.linkedin.com/company/autonoma-ai" class="header-link" target="_blank" rel="noopener">
+            LinkedIn
+        </a>
+        <a href="https://x.com/autonomaai" class="header-link" target="_blank" rel="noopener">
+            X
+        </a>
+    </nav>
+</header>
+
+<style>
+    .docs-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        height: var(--nav-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        border-bottom: 1px solid var(--border-dim);
+        background: rgba(5, 5, 5, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .sidebar-toggle {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .sidebar-toggle:hover {
+        color: var(--text-primary);
+    }
+
+    .header-logo {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .logo-img {
+        height: 1.5rem;
+        width: auto;
+    }
+
+    .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .header-link {
+        font-size: 0.8125rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .header-link:hover {
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 768px) {
+        .sidebar-toggle {
+            display: flex;
+        }
+        .header-nav {
+            display: none;
+        }
+    }
+</style>

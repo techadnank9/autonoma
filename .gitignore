@@ -1,0 +1,38 @@
+node_modules/
+dist/
+.output/
+.workflow-data/
+.turbo/
+*.tsbuildinfo
+
+# Prisma 7 generated client
+packages/db/src/generated/
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+pnpm-debug.log*
+*.log
+
+
+# AI
+.claude/settings.local.json
+
+# IDEs
+.idea/
+.vscode/
+.zed/
+
+.codex/
+
+# Husky auto-generated
+.husky/_
+
+# Conductor local setup
+.conductor/local-setup.sh
+
+# Docs
+.astro/

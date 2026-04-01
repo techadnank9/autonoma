@@ -1,0 +1,61 @@
+---
+interface Props {
+    title: string
+    icon?: string
+}
+
+const { title } = Astro.props
+---
+
+<div class="doc-card">
+    <div class="doc-card-title">{title}</div>
+    <div class="doc-card-body">
+        <slot />
+    </div>
+</div>
+
+<style>
+    .doc-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1.25rem;
+        border: 1px solid var(--border-dim);
+        background: var(--surface-base);
+        transition: all 0.15s ease;
+    }
+
+    .doc-card:hover {
+        border-color: var(--border-mid);
+        background: var(--surface-raised);
+    }
+
+    .doc-card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .doc-card-body {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .doc-card-body :global(p:last-child) {
+        margin-top: auto;
+    }
+
+    .doc-card-body :global(a) {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .doc-card-body :global(a:hover) {
+        text-decoration: underline;
+    }
+</style>

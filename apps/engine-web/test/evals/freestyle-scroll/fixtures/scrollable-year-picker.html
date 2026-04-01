@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Year Picker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; }
+
+    .form-container {
+      position: absolute;
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 400px;
+    }
+
+    .form-container h2 {
+      font-size: 20px;
+      color: #0f172a;
+      margin-bottom: 20px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .field-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .year-picker {
+      width: 100%;
+      height: 220px;
+      overflow-y: auto;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .year-option {
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #334155;
+      cursor: pointer;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .year-option:hover { background: #e0f2fe; color: #0284c7; }
+    .year-option.selected { background: #0284c7; color: white; font-weight: 600; }
+
+    .decor-card {
+      position: absolute;
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.querySelector('.form-container');
+      // Random position: left 80-500px, top 60-300px
+      const left = 80 + Math.floor(Math.random() * 420);
+      const top = 60 + Math.floor(Math.random() * 240);
+      form.style.left = left + 'px';
+      form.style.top = top + 'px';
+
+      // Generate years 1950-2030
+      const picker = document.querySelector('.year-picker');
+      for (let y = 1950; y <= 2030; y++) {
+        const div = document.createElement('div');
+        div.className = 'year-option';
+        div.textContent = y;
+        div.addEventListener('click', () => {
+          document.querySelectorAll('.year-option.selected').forEach(el => el.classList.remove('selected'));
+          div.classList.add('selected');
+        });
+        picker.appendChild(div);
+      }
+
+      // Place decor cards at random spots to add visual noise
+      const decor1 = document.querySelector('.decor-card.a');
+      const decor2 = document.querySelector('.decor-card.b');
+      if (decor1) { decor1.style.left = '900px'; decor1.style.top = (80 + Math.floor(Math.random() * 200)) + 'px'; }
+      if (decor2) { decor2.style.left = '900px'; decor2.style.top = (400 + Math.floor(Math.random() * 200)) + 'px'; }
+    });
+  </script>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Registration Form</h2>
+    <div class="field-group">
+      <label>Full Name</label>
+      <input type="text" placeholder="John Doe">
+    </div>
+    <div class="field-group">
+      <label>Email</label>
+      <input type="email" placeholder="john@example.com">
+    </div>
+    <div class="field-group">
+      <label>Birth Year</label>
+      <div class="year-picker"></div>
+    </div>
+  </div>
+
+  <div class="decor-card a">
+    <strong>Tip:</strong> Select your birth year from the scrollable list on the left.
+  </div>
+  <div class="decor-card b">
+    <strong>Note:</strong> All fields are required for registration.
+  </div>
+</body>
+</html>

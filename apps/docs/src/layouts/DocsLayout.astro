@@ -1,0 +1,207 @@
+---
+import Header from "../components/Header.astro"
+import Sidebar from "../components/Sidebar.astro"
+import TableOfContents from "../components/TableOfContents.astro"
+import PrevNextNav from "../components/PrevNextNav.astro"
+import "../styles/docs.css"
+
+interface Props {
+    title: string
+    description?: string
+    headings: { depth: number; slug: string; text: string }[]
+    previous?: { slug: string; title: string }
+    next?: { slug: string; title: string }
+    currentSlug: string
+    /** Raw markdown source for "Copy as markdown" */
+    rawMarkdown?: string
+}
+
+const { title, description, headings, previous, next, currentSlug, rawMarkdown } = Astro.props
+const pageTitle = `${title} - Autonoma Docs`
+const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3)
+---
+
+<!doctype html>
+<html lang="en" class="blacklight-dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{pageTitle}</title>
+        {description && <meta name="description" content={description} />}
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="sitemap" href="/sitemap-index.xml" />
+    </head>
+    <body class="min-h-screen bg-background text-foreground font-sans antialiased">
+        <Header />
+
+        <div class="docs-layout">
+            <Sidebar currentSlug={currentSlug} />
+
+            <main class="docs-main">
+                <article class="docs-article">
+                    <div class="docs-content">
+                        <div class="page-title-row">
+                            <h1>{title}</h1>
+                            {rawMarkdown && (
+                                <button
+                                    type="button"
+                                    class="copy-markdown-btn"
+                                    aria-label="Copy page as markdown"
+                                    data-markdown={rawMarkdown}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4px" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="11" height="11" x="8" y="8" rx="2" ry="2" />
+                                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                    </svg>
+                                    <span class="copy-label">Copy as markdown</span>
+                                </button>
+                            )}
+                        </div>
+
+                        <slot />
+                    </div>
+
+                    <PrevNextNav previous={previous} next={next} />
+                </article>
+
+                {filteredHeadings.length > 0 && (
+                    <aside class="docs-toc">
+                        <TableOfContents headings={filteredHeadings} />
+                    </aside>
+                )}
+            </main>
+        </div>
+
+        <div class="heading-copied-toast" id="heading-toast">Link copied</div>
+
+        <script>
+            // Heading anchor copy
+            const toast = document.getElementById("heading-toast");
+            let hideTimeout: ReturnType<typeof setTimeout>;
+
+            document.querySelector(".docs-content")?.addEventListener("click", (e) => {
+                const heading = (e.target as HTMLElement).closest("h2[id], h3[id], h4[id]");
+                if (!heading || !toast) return;
+
+                const url = new URL("#" + heading.id, window.location.href);
+                url.search = "";
+                navigator.clipboard.writeText(url.toString()).then(() => {
+                    clearTimeout(hideTimeout);
+                    toast.classList.add("visible");
+                    hideTimeout = setTimeout(() => toast.classList.remove("visible"), 1500);
+                });
+            });
+
+            // Copy markdown button
+            document.querySelectorAll(".copy-markdown-btn").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const markdown = (btn as HTMLElement).dataset.markdown;
+                    if (!markdown) return;
+                    try {
+                        await navigator.clipboard.writeText(markdown);
+                        const label = btn.querySelector(".copy-label");
+                        if (label) {
+                            label.textContent = "Copied!";
+                            setTimeout(() => { label.textContent = "Copy as markdown"; }, 2000);
+                        }
+                    } catch {}
+                });
+            });
+
+            // Mobile sidebar toggle
+            document.getElementById("sidebar-toggle")?.addEventListener("click", () => {
+                document.getElementById("sidebar")?.classList.toggle("open");
+                document.getElementById("sidebar-backdrop")?.classList.toggle("open");
+            });
+            document.getElementById("sidebar-backdrop")?.addEventListener("click", () => {
+                document.getElementById("sidebar")?.classList.remove("open");
+                document.getElementById("sidebar-backdrop")?.classList.remove("open");
+            });
+        </script>
+
+        <style>
+            .docs-layout {
+                display: flex;
+                min-height: calc(100vh - var(--nav-height));
+                margin-top: var(--nav-height);
+            }
+
+            .docs-main {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                min-width: 0;
+                margin-left: var(--sidebar-width);
+            }
+
+            .docs-article {
+                flex: 0 1 var(--content-max-width);
+                min-width: 0;
+                padding: 2.5rem var(--content-pad-x) 4rem;
+            }
+
+            .docs-toc {
+                width: var(--toc-width);
+                flex-shrink: 0;
+                position: sticky;
+                top: var(--nav-height);
+                height: calc(100vh - var(--nav-height));
+                overflow-y: auto;
+                padding: 2.5rem 1rem 2rem 0;
+                border-left: 1px solid var(--border-dim);
+            }
+
+            .page-title-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .page-title-row h1 {
+                flex: 1;
+                min-width: 0;
+                margin: 0;
+            }
+
+            .copy-markdown-btn {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.375rem 0.75rem;
+                border: 1px solid var(--border-dim);
+                background: var(--surface-base);
+                font-size: 0.8125rem;
+                color: var(--text-secondary);
+                cursor: pointer;
+                font-family: inherit;
+                flex-shrink: 0;
+                transition: all 0.15s ease;
+            }
+
+            .copy-markdown-btn:hover {
+                color: var(--text-primary);
+                border-color: var(--border-mid);
+                background: var(--surface-raised);
+            }
+
+            /* Mobile responsiveness */
+            @media (max-width: 1280px) {
+                .docs-toc {
+                    display: none;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .docs-main {
+                    margin-left: 0;
+                }
+                .docs-article {
+                    padding: 1.5rem 1rem 3rem;
+                }
+            }
+        </style>
+    </body>
+</html>

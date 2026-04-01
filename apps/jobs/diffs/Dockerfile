@@ -1,0 +1,8 @@
+FROM node:24-slim
+RUN apt-get update && apt-get install -y --no-install-recommends git ripgrep && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY . .
+
+ENV NODE_ENV=production
+USER node
+CMD ["node", "dist/index.js"]

@@ -1,0 +1,36 @@
+{
+    "name": "@autonoma/diffs",
+    "version": "1.0.0",
+    "type": "module",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "test": "vitest",
+        "eval": "RUN_EVALS=true vitest",
+        "lint-files": "oxlint --fix",
+        "lint": "pnpm lint-files .",
+        "fmt": "oxfmt --write src/",
+        "build": "tsc",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@autonoma/ai": "workspace:*",
+        "@autonoma/db": "workspace:*",
+        "@autonoma/logger": "workspace:*",
+        "@autonoma/test-updates": "workspace:*",
+        "@octokit/app": "^16.1.2",
+        "ai": "catalog:",
+        "glob": "^11.0.0",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@autonoma/integration-test": "workspace:*",
+        "@testcontainers/postgresql": "^11.12.0",
+        "@types/node": "catalog:",
+        "dotenv": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    }
+}

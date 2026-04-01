@@ -1,0 +1,85 @@
+import { writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { RunAPIRunner, type RunData } from "@autonoma/engine";
+import { setScreenshotConfig } from "@autonoma/image";
+import { logger as rootLogger } from "@autonoma/logger";
+import type { StorageProvider } from "@autonoma/storage";
+import { AuthPayloadSchema } from "@autonoma/types";
+import type { WebContext } from "../platform";
+import { toPlaywrightCookies } from "../platform/scenario-auth";
+import type { WebApplicationData } from "../platform/web-application-data";
+import type { ReplayWebCommandSpec } from "./web-command-spec";
+
+const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
+
+export class WebRunAPIRunner extends RunAPIRunner<ReplayWebCommandSpec, WebContext, WebApplicationData> {
+    private readonly runLogger = rootLogger.child({ name: "WebRunAPIRunner" });
+    constructor(
+        config: ConstructorParameters<typeof RunAPIRunner<ReplayWebCommandSpec, WebContext, WebApplicationData>>[0] & {
+            storageProvider: StorageProvider;
+        },
+    ) {
+        const { storageProvider, ...runnerConfig } = config;
+        super(runnerConfig);
+        this.storageProvider = storageProvider;
+    }
+
+    private readonly storageProvider: StorageProvider;
+
+    public async parseRunData(data: RunData): Promise<WebApplicationData> {
+        const webDeployment = data.application.mainBranch?.deployment?.webDeployment;
+        if (webDeployment == null) {
+            throw new Error(`Application "${data.application.name}" has no web deployment`);
+        }
+
+        const file = webDeployment.file != null ? await this.resolveUploadFilePath(webDeployment.file) : undefined;
+
+        const authParsed = AuthPayloadSchema.safeParse(data.scenarioInstance?.auth);
+        const auth = authParsed.success ? authParsed.data : undefined;
+        const cookies = auth?.cookies != null ? toPlaywrightCookies(auth.cookies, webDeployment.url) : undefined;
+        const headers = auth?.headers;
+        const credentials = auth?.credentials;
+
+        if (credentials != null) {
+            for (const [key, value] of Object.entries(credentials)) {
+                this.memory.set(key, value);
+            }
+        }
+
+        this.runLogger.info("Parsed run application data", {
+            url: webDeployment.url,
+            hasFile: file != null,
+            hasCookies: cookies != null,
+            hasHeaders: headers != null,
+            hasCredentials: credentials != null,
+        });
+
+        setScreenshotConfig({
+            screenResolution: DEFAULT_VIEWPORT,
+            architecture: "web",
+        });
+
+        return {
+            url: webDeployment.url,
+            file,
+            cookies,
+            headers,
+        };
+    }
+
+    private async resolveUploadFilePath(fileKey: string): Promise<string> {
+        this.runLogger.info("Downloading upload file from S3", { fileKey });
+
+        const buffer = await this.storageProvider.download(fileKey);
+
+        const filename = `${Date.now()}-${path.basename(fileKey)}`;
+        const tmpPath = path.join(os.tmpdir(), filename);
+
+        writeFileSync(tmpPath, buffer);
+
+        this.runLogger.info("Upload file written to tmp path", { tmpPath });
+
+        return tmpPath;
+    }
+}

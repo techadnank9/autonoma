@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Product Catalog</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafaf9; }
+
+    .catalog {
+      position: absolute;
+      width: 350px;
+      height: 450px;
+      background: white;
+      border: 1px solid #e7e5e4;
+      border-radius: 12px;
+      overflow-y: auto;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .catalog-header {
+      position: sticky;
+      top: 0;
+      background: #7c3aed;
+      color: white;
+      padding: 16px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px 12px 0 0;
+      z-index: 1;
+    }
+
+    .product {
+      padding: 14px 20px;
+      border-bottom: 1px solid #f5f5f4;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-name { font-size: 14px; color: #1c1917; font-weight: 500; }
+    .product-price { font-size: 13px; color: #7c3aed; font-weight: 600; }
+    .product-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 500;
+    }
+    .tag-sale { background: #fef2f2; color: #dc2626; }
+    .tag-new { background: #ecfdf5; color: #059669; }
+    .tag-popular { background: #eff6ff; color: #2563eb; }
+
+    .info-panel {
+      position: absolute;
+      right: 80px;
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      width: 380px;
+    }
+
+    .info-panel h2 { font-size: 18px; color: #1c1917; margin-bottom: 8px; }
+    .info-panel p { font-size: 14px; color: #78716c; line-height: 1.5; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const catalog = document.querySelector('.catalog');
+      // Random position: left 50-300px, top 40-250px
+      const left = 50 + Math.floor(Math.random() * 250);
+      const top = 40 + Math.floor(Math.random() * 210);
+      catalog.style.left = left + 'px';
+      catalog.style.top = top + 'px';
+
+      const infoPanel = document.querySelector('.info-panel');
+      infoPanel.style.top = (top + 20) + 'px';
+
+      const products = [
+        { name: 'Wireless Headphones', price: '$79.99', tag: 'popular' },
+        { name: 'USB-C Hub', price: '$34.99', tag: 'new' },
+        { name: 'Mechanical Keyboard', price: '$129.99' },
+        { name: 'Monitor Stand', price: '$49.99' },
+        { name: 'Webcam HD', price: '$59.99', tag: 'sale' },
+        { name: 'Desk Lamp', price: '$39.99' },
+        { name: 'Mouse Pad XL', price: '$24.99' },
+        { name: 'Cable Organizer', price: '$14.99', tag: 'new' },
+        { name: 'Laptop Sleeve', price: '$29.99' },
+        { name: 'Phone Charger', price: '$19.99', tag: 'popular' },
+        { name: 'Screen Protector', price: '$9.99' },
+        { name: 'Portable SSD', price: '$89.99', tag: 'sale' },
+        { name: 'Bluetooth Speaker', price: '$44.99' },
+        { name: 'Drawing Tablet', price: '$199.99', tag: 'new' },
+        { name: 'Ergonomic Chair', price: '$349.99', tag: 'popular' },
+        { name: 'Standing Desk Mat', price: '$59.99' },
+        { name: 'Noise Cancelling Buds', price: '$149.99', tag: 'sale' },
+        { name: 'Streaming Microphone', price: '$99.99' },
+        { name: 'Ring Light', price: '$29.99', tag: 'new' },
+        { name: 'HDMI Cable 4K', price: '$12.99' },
+        { name: 'Thunderbolt Dock', price: '$249.99', tag: 'popular' },
+      ];
+
+      const list = catalog.querySelector('.catalog-header').parentElement;
+      for (const p of products) {
+        const div = document.createElement('div');
+        div.className = 'product';
+        let tagHtml = '';
+        if (p.tag === 'sale') tagHtml = '<span class="product-tag tag-sale">SALE</span>';
+        else if (p.tag === 'new') tagHtml = '<span class="product-tag tag-new">NEW</span>';
+        else if (p.tag === 'popular') tagHtml = '<span class="product-tag tag-popular">POPULAR</span>';
+        div.innerHTML = `
+          <div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-price">${p.price}</div>
+          </div>
+          ${tagHtml}
+        `;
+        list.appendChild(div);
+      }
+
+      // Scroll to the bottom initially so the test needs to scroll UP
+      catalog.scrollTop = catalog.scrollHeight;
+    });
+  </script>
+</head>
+<body>
+  <div class="catalog">
+    <div class="catalog-header">Product Catalog</div>
+  </div>
+
+  <div class="info-panel">
+    <h2>Browse Products</h2>
+    <p>Scroll through our catalog to find the best deals. Look for SALE tags for discounted items and NEW tags for recently added products.</p>
+  </div>
+</body>
+</html>

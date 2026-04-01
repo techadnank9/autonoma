@@ -1,0 +1,40 @@
+{
+    "name": "@autonoma/docs",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "astro dev",
+        "build": "astro build",
+        "preview": "astro preview",
+        "fmt": "oxfmt --write src/"
+    },
+    "dependencies": {
+        "@astrojs/mdx": "^4.3.13",
+        "@astrojs/react": "^4.2.1",
+        "@autonoma/blacklight": "workspace:*",
+        "@fontsource-variable/dm-sans": "^5.2.8",
+        "@fontsource-variable/geist-mono": "^5.2.7",
+        "@tailwindcss/vite": "^4.1.17",
+        "astro": "^5.18.1",
+        "astro-expressive-code": "^0.41.7",
+        "hast-util-select": "^6.0.4",
+        "rehype-parse": "^9.0.1",
+        "rehype-remark": "^10.0.1",
+        "remark-directive": "^4.0.0",
+        "remark-gfm": "^4.0.1",
+        "remark-stringify": "^11.0.0",
+        "sharp": "^0.33.0",
+        "tailwindcss": "catalog:",
+        "unified": "^11.0.5",
+        "unist-util-remove": "^4.0.0",
+        "unist-util-visit": "^5.0.0"
+    },
+    "devDependencies": {
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "typescript": "catalog:"
+    }
+}

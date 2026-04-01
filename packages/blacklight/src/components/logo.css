@@ -1,0 +1,123 @@
+/* ═══════════════════════════════════════════
+   SVG logo styles
+   (Kept in CSS - SVG paint attributes have no
+   direct Tailwind equivalents)
+   ═══════════════════════════════════════════ */
+.logo-mark {
+  --logo-stroke-scale: 1;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+
+.svg-construction {
+  fill: none;
+  stroke-dasharray: 2 4;
+  stroke-width: calc(0.5 * var(--logo-stroke-scale));
+  stroke: var(--border-dim);
+}
+
+.svg-core-shape {
+  fill: none;
+  stroke-width: calc(4 * var(--logo-stroke-scale));
+  stroke-linejoin: miter;
+  stroke-miterlimit: 10;
+  stroke: var(--primary);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.svg-iris {
+  fill: none;
+  stroke-width: calc(2.5 * var(--logo-stroke-scale));
+  stroke-linejoin: miter;
+  stroke: var(--primary);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.svg-pupil {
+  stroke: none;
+  fill: var(--primary);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.svg-ray {
+  stroke-width: calc(1 * var(--logo-stroke-scale));
+  stroke-linecap: square;
+  stroke: var(--primary);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.svg-ray-dashed {
+  stroke-width: calc(1 * var(--logo-stroke-scale));
+  stroke-dasharray: 4 6;
+  stroke: var(--primary);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+/* Monochrome logo variant */
+.logo-monochrome .svg-core-shape,
+.logo-monochrome .svg-iris,
+.logo-monochrome .svg-ray,
+.logo-monochrome .svg-ray-dashed {
+  stroke: currentColor;
+  filter: none;
+}
+.logo-monochrome .svg-pupil {
+  fill: currentColor;
+  filter: none;
+}
+.logo-monochrome .svg-construction {
+  display: none;
+}
+
+/* Blacklight light theme - use violet for better contrast on lavender */
+.blacklight .logo-mark:not(.logo-monochrome) .svg-core-shape,
+.blacklight .logo-mark:not(.logo-monochrome) .svg-iris,
+.blacklight .logo-mark:not(.logo-monochrome) .svg-ray,
+.blacklight .logo-mark:not(.logo-monochrome) .svg-ray-dashed {
+  stroke: var(--violet-accent);
+  filter: none;
+}
+.blacklight .logo-mark:not(.logo-monochrome) .svg-pupil {
+  fill: var(--violet-accent);
+  filter: none;
+}
+
+/* ═══════════════════════════════════════════
+   Animations
+   ═══════════════════════════════════════════ */
+@keyframes pulse-emission {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.98); }
+}
+
+@keyframes bl-orbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes bl-orbit-rev {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes bl-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.6); }
+}
+
+@keyframes bl-pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-rays .svg-ray,
+.animate-rays .svg-ray-dashed {
+  transform-origin: center;
+  animation: pulse-emission 4s ease-in-out infinite;
+}
+
+.animate-rays .svg-pupil {
+  transform-origin: center;
+  animation: pulse-emission 2s ease-in-out infinite alternate;
+}

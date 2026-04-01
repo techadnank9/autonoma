@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Scrollable Sidebar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; }
+
+    .sidebar {
+      position: absolute;
+      width: 280px;
+      height: 500px;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .sidebar-header {
+      position: sticky;
+      top: 0;
+      background: #1e293b;
+      color: white;
+      padding: 16px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px 12px 0 0;
+      z-index: 1;
+    }
+
+    .sidebar-item {
+      padding: 14px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+      font-size: 14px;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-item:hover { background: #f9fafb; }
+    .sidebar-item .icon { font-size: 18px; }
+
+    .sidebar-item.logout {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .main-content {
+      position: absolute;
+      top: 40px;
+      right: 60px;
+      width: 500px;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .main-content h1 { font-size: 24px; color: #1e293b; margin-bottom: 12px; }
+    .main-content p { color: #6b7280; line-height: 1.6; }
+  </style>
+  <script>
+    // Randomize sidebar position on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.querySelector('.sidebar');
+      // Random position: left 40-200px, top 30-200px
+      const left = 40 + Math.floor(Math.random() * 160);
+      const top = 30 + Math.floor(Math.random() * 170);
+      sidebar.style.left = left + 'px';
+      sidebar.style.top = top + 'px';
+    });
+  </script>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">Navigation</div>
+    <div class="sidebar-item"><span class="icon">🏠</span> Dashboard</div>
+    <div class="sidebar-item"><span class="icon">📊</span> Analytics</div>
+    <div class="sidebar-item"><span class="icon">👥</span> Team Members</div>
+    <div class="sidebar-item"><span class="icon">📁</span> Projects</div>
+    <div class="sidebar-item"><span class="icon">📅</span> Calendar</div>
+    <div class="sidebar-item"><span class="icon">💬</span> Messages</div>
+    <div class="sidebar-item"><span class="icon">📋</span> Tasks</div>
+    <div class="sidebar-item"><span class="icon">📈</span> Reports</div>
+    <div class="sidebar-item"><span class="icon">🔔</span> Notifications</div>
+    <div class="sidebar-item"><span class="icon">⚙️</span> Settings</div>
+    <div class="sidebar-item"><span class="icon">🔐</span> Security</div>
+    <div class="sidebar-item"><span class="icon">💳</span> Billing</div>
+    <div class="sidebar-item"><span class="icon">📦</span> Integrations</div>
+    <div class="sidebar-item"><span class="icon">📝</span> Audit Log</div>
+    <div class="sidebar-item"><span class="icon">🎨</span> Appearance</div>
+    <div class="sidebar-item"><span class="icon">🌐</span> Language</div>
+    <div class="sidebar-item"><span class="icon">❓</span> Help Center</div>
+    <div class="sidebar-item"><span class="icon">📞</span> Support</div>
+    <div class="sidebar-item logout"><span class="icon">🚪</span> Logout</div>
+  </div>
+
+  <div class="main-content">
+    <h1>Welcome to the Dashboard</h1>
+    <p>Select an option from the sidebar to get started. Scroll down in the navigation panel to find more options including settings and logout.</p>
+  </div>
+</body>
+</html>

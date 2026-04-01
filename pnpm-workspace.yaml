@@ -1,0 +1,38 @@
+packages:
+  - apps/**
+  - packages/**
+  - "!apps/**/.output/**"
+  - "!apps/**/.nitro/**"
+
+catalog:
+  '@ai-sdk/anthropic': ^3.0.0
+  '@ai-sdk/google': ^3.0.30
+  '@ai-sdk/groq': ^3.0.2
+  '@kubernetes/client-node': ^1.4.0
+  '@radix-ui/react-slot': ^1.2.2
+  '@tanstack/react-table': ^8.21.3
+  '@sentry/node': ^10.38.0
+  '@sentry/react': ^10.38.0
+  '@t3-oss/env-core': ^0.13.10
+  '@trpc/client': ^11.10.0
+  '@trpc/react-query': ^11.10.0
+  '@trpc/server': ^11.10.0
+  '@trpc/tanstack-react-query': ^11.10.0
+  '@types/node': ^25.2.3
+  '@types/react': ^19.0.0
+  '@types/react-dom': ^19.0.0
+  ai: ^6.0.34
+  better-auth: ^1.4.18
+  dotenv: ^17.3.1
+  playwright: 1.56.1
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  tailwindcss: '4'
+  tsx: ^4.19.0
+  typescript: ^5.7.0
+  vitest: ^4.0.18
+  zod: 4.3.6
+
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - prisma

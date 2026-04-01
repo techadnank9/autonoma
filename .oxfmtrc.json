@@ -1,0 +1,19 @@
+{
+    "useTabs": false,
+    "tabWidth": 4,
+    "printWidth": 120,
+    "singleQuote": false,
+    "trailingComma": "all",
+    "semi": true,
+    "sortImports": {
+        "newlinesBetween": false
+    },
+    "overrides": [
+        {
+            "files": ["**/*.jsx", "**/*.tsx"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}

@@ -1,0 +1,183 @@
+name: CI Checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate-pr-title:
+    name: Validate Pull Request title
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Conventional Commit Validation
+        uses: ytanikin/pr-conventional-commits@1.5.1
+        with:
+          task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","revert", "style"]'
+          add_label: "false"
+
+  changes:
+    name: Detect changes
+    if: github.event.pull_request.draft == false
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      ui: ${{ steps.filter.outputs.ui }}
+      reviewer: ${{ steps.filter.outputs.reviewer }}
+      notifier: ${{ steps.filter.outputs.notifier }}
+      db: ${{ steps.filter.outputs.db }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+            ui:
+              - 'apps/ui/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+            reviewer:
+              - 'apps/jobs/reviewer/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+            notifier:
+              - 'apps/jobs/notifier/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'package.json'
+            db:
+              - 'packages/db/prisma/**'
+
+  check-migrations:
+    name: Check Prisma Migrations
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: changes
+    if: needs.changes.outputs.db == 'true'
+    services:
+      shadow-db:
+        image: postgres:18
+        env:
+          POSTGRES_USER: prisma
+          POSTGRES_PASSWORD: prisma
+          POSTGRES_DB: shadow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U prisma"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: useblacksmith/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for pending migrations
+        env:
+          DATABASE_URL: "postgresql://prisma:prisma@localhost:5432/shadow"
+        run: |
+          SHADOW_URL="postgresql://prisma:prisma@localhost:5432/shadow"
+          cat > packages/db/prisma.config.ts <<EOF
+          import { defineConfig } from "prisma/config";
+          export default defineConfig({
+            schema: "prisma/schema.prisma",
+            migrations: { path: "prisma/migrations" },
+            datasource: { url: "${SHADOW_URL}", shadowDatabaseUrl: "${SHADOW_URL}" },
+          });
+          EOF
+          diff_output=$(pnpm -F @autonoma/db db migrate diff --from-migrations ./prisma/migrations --to-schema ./prisma/schema.prisma --exit-code 2>&1) || exit_code=$?
+          if [ "${exit_code:-0}" -eq 2 ]; then
+            echo "::error::Prisma schema has changes not covered by a migration. Run 'pnpm db:migrate' to create one."
+            echo "$diff_output"
+            exit 1
+          fi
+
+  check-api:
+    name: Check API
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: useblacksmith/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm turbo run lint --filter @autonoma/api...
+
+      - name: Typecheck
+        run: pnpm turbo run typecheck --filter @autonoma/api...
+
+      - name: Test
+        env:
+          GROQ_KEY: ${{ secrets.GROQ_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: pnpm turbo run test --filter @autonoma/api...
+
+  check-ui:
+    name: Check UI
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: changes
+    if: needs.changes.outputs.ui == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: useblacksmith/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm turbo run lint --filter @autonoma/ui
+
+      - name: Typecheck
+        run: pnpm turbo run typecheck --filter @autonoma/ui...
+
+      - name: Test
+        run: pnpm turbo run test --filter @autonoma/ui

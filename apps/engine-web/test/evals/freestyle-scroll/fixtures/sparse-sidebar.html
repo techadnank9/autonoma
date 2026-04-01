@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>App Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f4; }
+
+    .app-shell { display: flex; height: 100vh; }
+
+    .sidebar {
+      position: absolute;
+      width: 260px;
+      height: 600px;
+      background: #1a1a2e;
+      border-radius: 0 16px 16px 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand h1 {
+      font-size: 18px;
+      color: #e0e0e0;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-brand span {
+      font-size: 12px;
+      color: #6b7280;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .sidebar-section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #4b5563;
+      padding: 20px 20px 8px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-item {
+      padding: 11px 20px;
+      font-size: 13px;
+      color: #9ca3af;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); color: #e5e7eb; }
+    .sidebar-item .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4b5563;
+      flex-shrink: 0;
+    }
+
+    /*
+     * This spacer pushes the bottom group far below the visible fold.
+     * The visible area shows only the top items; the center of the container
+     * is empty blank space — no text, no icons, nothing to describe.
+     */
+    .sidebar-spacer {
+      flex: 0 0 800px;
+    }
+
+    .sidebar-item.danger { color: #f87171; }
+    .sidebar-item.danger .dot { background: #f87171; }
+
+    .main-area {
+      position: absolute;
+      right: 60px;
+      top: 40px;
+      width: 600px;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+
+    .main-area h2 { font-size: 22px; color: #1a1a2e; margin-bottom: 8px; }
+    .main-area p { font-size: 14px; color: #6b7280; line-height: 1.6; }
+    .main-area .card {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fafaf9;
+      border-radius: 8px;
+      border: 1px solid #e7e5e4;
+    }
+    .main-area .card h3 { font-size: 14px; color: #1c1917; margin-bottom: 4px; }
+    .main-area .card p { font-size: 13px; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.querySelector('.sidebar');
+      // Random position: left 0-100px, top 0-150px
+      const left = Math.floor(Math.random() * 100);
+      const top = Math.floor(Math.random() * 150);
+      sidebar.style.left = left + 'px';
+      sidebar.style.top = top + 'px';
+
+      const main = document.querySelector('.main-area');
+      main.style.left = (left + 320) + 'px';
+    });
+  </script>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <h1>Acme Corp</h1>
+      <span>Workspace settings</span>
+    </div>
+
+    <div class="sidebar-section-label">General</div>
+    <div class="sidebar-item"><span class="dot"></span> Overview</div>
+    <div class="sidebar-item"><span class="dot"></span> Profile</div>
+    <div class="sidebar-item"><span class="dot"></span> Notifications</div>
+
+    <!-- Large empty gap — the center of the sidebar is blank -->
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-section-label">Account</div>
+    <div class="sidebar-item"><span class="dot"></span> Change Password</div>
+    <div class="sidebar-item"><span class="dot"></span> Two-Factor Auth</div>
+    <div class="sidebar-item"><span class="dot"></span> Sessions</div>
+    <div class="sidebar-item"><span class="dot"></span> API Keys</div>
+    <div class="sidebar-item"><span class="dot"></span> Connected Apps</div>
+    <div class="sidebar-item"><span class="dot"></span> Export Data</div>
+    <div class="sidebar-item danger"><span class="dot"></span> Delete Account</div>
+  </div>
+
+  <div class="main-area">
+    <h2>Workspace Settings</h2>
+    <p>Manage your workspace preferences and account options. Use the sidebar to navigate between sections.</p>
+    <div class="card">
+      <h3>Quick Tip</h3>
+      <p>Scroll down in the sidebar to find account management options like security settings and API keys.</p>
+    </div>
+  </div>
+</body>
+</html>

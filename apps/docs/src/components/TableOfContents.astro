@@ -1,0 +1,107 @@
+---
+interface Props {
+    headings: { depth: number; slug: string; text: string }[]
+}
+
+const { headings } = Astro.props
+---
+
+<nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">On this page</div>
+    <ul class="toc-list">
+        {headings.map((h) => (
+            <li>
+                <a
+                    href={`#${h.slug}`}
+                    class:list={["toc-link", { "toc-link-nested": h.depth === 3 }]}
+                >
+                    {h.text}
+                </a>
+            </li>
+        ))}
+    </ul>
+</nav>
+
+<script>
+    function initToc() {
+        const links = document.querySelectorAll<HTMLAnchorElement>(".toc-link");
+        if (links.length === 0) return;
+
+        const headingIds = Array.from(links).map((a) => a.getAttribute("href")?.slice(1) ?? "");
+        const headings = headingIds
+            .map((id) => document.getElementById(id))
+            .filter((el): el is HTMLElement => el != null);
+
+        function updateActive() {
+            let activeIndex = 0;
+            const offset = 100;
+
+            for (let i = headings.length - 1; i >= 0; i--) {
+                const heading = headings[i];
+                if (heading && heading.getBoundingClientRect().top <= offset) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            links.forEach((link, i) => {
+                link.classList.toggle("active", i === activeIndex);
+            });
+        }
+
+        window.addEventListener("scroll", updateActive, { passive: true });
+        updateActive();
+    }
+
+    initToc();
+    document.addEventListener("astro:after-swap", initToc);
+</script>
+
+<style>
+    .toc {
+        padding-left: 1rem;
+    }
+
+    .toc-title {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+        margin-bottom: 0.75rem;
+    }
+
+    .toc-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .toc-link {
+        display: block;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+        text-decoration: none;
+        border-left: 1px solid var(--border-dim);
+        transition: all 0.15s ease;
+        line-height: 1.4;
+    }
+
+    .toc-link:hover {
+        color: var(--text-secondary);
+    }
+
+    .toc-link.active {
+        color: var(--primary);
+        border-left-color: var(--primary);
+    }
+
+    .toc-link-nested {
+        padding-left: 1.5rem;
+        font-size: 0.75rem;
+    }
+</style>

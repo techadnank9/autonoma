@@ -1,0 +1,22 @@
+{
+    "name": "@autonoma/emulator",
+    "version": "1.0.0",
+    "description": "Emulator management and capabilities builders",
+    "keywords": [],
+    "license": "ISC",
+    "author": "Autonoma",
+    "type": "module",
+    "main": "./src/index.ts",
+    "scripts": {
+        "build": "tsc",
+        "lint": "oxlint --fix src/",
+        "fmt": "oxfmt --write src/"
+    },
+    "dependencies": {
+        "@autonoma/logger": "workspace:*",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "typescript": "catalog:"
+    }
+}

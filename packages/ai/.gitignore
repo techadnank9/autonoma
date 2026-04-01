@@ -1,0 +1,7 @@
+/tests/artifacts/
+
+/evals/**/results/
+
+test-case.png
+
+/bounding-boxes/

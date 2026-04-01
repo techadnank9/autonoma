@@ -1,0 +1,25 @@
+{
+    "name": "@autonoma/job-run-completion-notification",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsup",
+        "typecheck": "tsc --noEmit",
+        "lint": "biome check src/ --fix",
+        "test": "vitest run --passWithNoTests"
+    },
+    "dependencies": {
+        "@autonoma/db": "workspace:*",
+        "@autonoma/logger": "workspace:*",
+        "@sentry/node": "catalog:",
+        "@t3-oss/env-core": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@types/node": "catalog:",
+        "tsup": "^8.5.1",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    }
+}
