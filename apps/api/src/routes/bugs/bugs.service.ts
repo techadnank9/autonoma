@@ -1,11 +1,16 @@
 import type { PrismaClient } from "@autonoma/db";
 import { BUG_CONFIDENCE_THRESHOLD, type BugLinker } from "@autonoma/review";
+import type { StorageProvider } from "@autonoma/storage";
 import { NotFoundError } from "../../api-errors";
 import { Service } from "../service";
+import { signEvidenceUrls } from "../sign-evidence-urls";
+
+type EvidenceItem = { type: string; description: string; s3Key?: string };
 
 export class BugsService extends Service {
     constructor(
         private readonly db: PrismaClient,
+        private readonly storageProvider: StorageProvider,
         private readonly bugLinker: BugLinker,
     ) {
         super();
@@ -76,11 +81,13 @@ export class BugsService extends Service {
                         createdAt: true,
                         generationReview: {
                             select: {
+                                analysis: true,
                                 generation: { select: { id: true, status: true } },
                             },
                         },
                         runReview: {
                             select: {
+                                analysis: true,
                                 run: { select: { id: true, status: true } },
                             },
                         },
@@ -91,6 +98,27 @@ export class BugsService extends Service {
         });
 
         if (bug == null) throw new NotFoundError();
+
+        type AnalysisJson = { evidence?: EvidenceItem[] } | undefined;
+
+        const issues = await Promise.all(
+            bug.issues.map(async (issue) => {
+                const analysis = (issue.generationReview?.analysis ?? issue.runReview?.analysis) as AnalysisJson;
+                const evidence = await signEvidenceUrls(analysis?.evidence ?? [], this.storageProvider);
+
+                return {
+                    id: issue.id,
+                    title: issue.title,
+                    confidence: issue.confidence,
+                    severity: issue.severity,
+                    createdAt: issue.createdAt,
+                    source: issue.generationReview != null ? ("generation" as const) : ("run" as const),
+                    sourceId: issue.generationReview?.generation.id ?? issue.runReview?.run.id,
+                    sourceStatus: issue.generationReview?.generation.status ?? issue.runReview?.run.status,
+                    evidence,
+                };
+            }),
+        );
 
         return {
             id: bug.id,
@@ -103,16 +131,7 @@ export class BugsService extends Service {
             resolvedAt: bug.resolvedAt,
             testCase: bug.testCase,
             branch: bug.branch,
-            issues: bug.issues.map((issue) => ({
-                id: issue.id,
-                title: issue.title,
-                confidence: issue.confidence,
-                severity: issue.severity,
-                createdAt: issue.createdAt,
-                source: issue.generationReview != null ? ("generation" as const) : ("run" as const),
-                sourceId: issue.generationReview?.generation.id ?? issue.runReview?.run.id,
-                sourceStatus: issue.generationReview?.generation.status ?? issue.runReview?.run.status,
-            })),
+            issues,
         };
     }
 

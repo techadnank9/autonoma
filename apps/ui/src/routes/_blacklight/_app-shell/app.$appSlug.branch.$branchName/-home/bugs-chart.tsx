@@ -18,12 +18,12 @@ import { dailyChartData, monthOverMonthChange } from "./helpers";
 
 const CHART_DAYS = 30;
 
-export function IssuesChart() {
+export function BugsChart() {
   const app = useCurrentApplication();
-  const { data: issues } = useSuspenseQuery(trpc.issues.list.queryOptions({ applicationId: app.id }));
+  const { data: bugs } = useSuspenseQuery(trpc.bugs.list.queryOptions({ applicationId: app.id }));
 
-  const chartData = dailyChartData(issues, (i) => i.createdAt, CHART_DAYS);
-  const change = monthOverMonthChange(issues, (i) => i.createdAt);
+  const chartData = dailyChartData(bugs, (b) => b.firstSeenAt, CHART_DAYS);
+  const change = monthOverMonthChange(bugs, (b) => b.firstSeenAt);
 
   // Bugs decreasing is good (green), increasing is bad (red)
   const isTrendingDown = change != null && change <= 0;
@@ -76,7 +76,7 @@ export function IssuesChart() {
   );
 }
 
-export function IssuesChartSkeleton() {
+export function BugsChartSkeleton() {
   return (
     <Panel>
       <PanelHeader>
@@ -86,7 +86,7 @@ export function IssuesChartSkeleton() {
         </div>
       </PanelHeader>
       <PanelBody className="p-4">
-        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-72 w-full" />
       </PanelBody>
     </Panel>
   );

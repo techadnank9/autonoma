@@ -1,7 +1,6 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { type VariantProps, cva } from "class-variance-authority";
-
 import { cn } from "../../lib/utils";
 
 const badgeVariants = cva(
@@ -28,7 +27,8 @@ const badgeVariants = cva(
         "status-failed":
           "border-status-critical bg-status-critical/10 text-status-critical font-mono text-[10px] uppercase",
         "status-running": "border-status-warn bg-status-warn/10 text-status-warn font-mono text-[10px] uppercase",
-        "status-pending": "border-border-mid bg-surface-raised text-text-tertiary font-mono text-[10px] uppercase",
+        "status-pending":
+          "border-status-pending/30 bg-status-pending/10 text-status-pending font-mono text-[10px] uppercase",
       },
     },
     defaultVariants: {

@@ -94,6 +94,16 @@ async function main() {
 
     logger.info("Persisting review result", { verdict: verdict.verdict });
 
+    const enrichedEvidence = verdict.evidence.map((item) => {
+        if (item.type === "screenshot" && data.finalScreenshotKey != null) {
+            return { ...item, s3Key: data.finalScreenshotKey };
+        }
+        if (item.type === "video" && data.videoS3Key != null) {
+            return { ...item, s3Key: data.videoS3Key };
+        }
+        return item;
+    });
+
     await db.$transaction(async (tx) => {
         const review = await tx.runReview.update({
             where: { runId: data.runId },
@@ -103,7 +113,7 @@ async function main() {
                 reasoning: verdict.reasoning,
                 analysis: {
                     failurePoint: verdict.failurePoint,
-                    evidence: verdict.evidence,
+                    evidence: enrichedEvidence,
                 },
             },
         });

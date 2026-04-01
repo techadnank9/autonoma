@@ -1,13 +1,16 @@
 import { Badge, Panel, PanelBody, PanelHeader, PanelTitle, Separator, Skeleton } from "@autonoma/blacklight";
 import { ArrowLeftIcon } from "@phosphor-icons/react/ArrowLeft";
 import { ArrowSquareOutIcon } from "@phosphor-icons/react/ArrowSquareOut";
+import { CaretDownIcon } from "@phosphor-icons/react/CaretDown";
 import { CaretRightIcon } from "@phosphor-icons/react/CaretRight";
 import { CrosshairIcon } from "@phosphor-icons/react/Crosshair";
 import { ListChecksIcon } from "@phosphor-icons/react/ListChecks";
 import { ScalesIcon } from "@phosphor-icons/react/Scales";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { EvidenceLightbox } from "components/evidence-lightbox";
 import { formatDate } from "lib/format";
 import { ensureIssueDetailData, useIssueDetail } from "lib/query/issues.queries";
+import { useState } from "react";
 import { useCurrentBranch } from "../-use-current-branch";
 import { useCurrentApplication } from "../../-use-current-application";
 
@@ -56,6 +59,12 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
+interface EvidenceMedia {
+  type: "screenshot" | "video";
+  url: string;
+  description: string;
+}
+
 function IssueDetailPage() {
   const { issueId } = Route.useParams();
   const currentApp = useCurrentApplication();
@@ -63,11 +72,12 @@ function IssueDetailPage() {
   const { data: issue } = useIssueDetail(issueId);
 
   const failurePoint = issue.review.failurePoint as { stepOrder?: number; description?: string } | undefined;
-  const evidence = (issue.review.evidence ?? []) as Array<{ type: string; description: string }>;
+  const evidence = (issue.review.evidence ?? []) as Array<{ type: string; description: string; url?: string }>;
+  const [reasoningOpen, setReasoningOpen] = useState(false);
+  const [activeMedia, setActiveMedia] = useState<EvidenceMedia | undefined>(undefined);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Header */}
       <div className="shrink-0 space-y-4 px-6 pt-6">
         <section className="flex items-center justify-between">
           <Link
@@ -103,9 +113,7 @@ function IssueDetailPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex min-h-0 flex-1 gap-6 overflow-y-auto px-6 py-5 pb-6">
-        {/* Sidebar */}
         <div className="hidden w-72 shrink-0 lg:block">
           <div className="flex flex-col gap-4">
             <Panel>
@@ -172,20 +180,7 @@ function IssueDetailPage() {
           </div>
         </div>
 
-        {/* Main content */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* Reasoning */}
-          <Panel>
-            <PanelHeader className="flex items-center gap-2">
-              <ScalesIcon size={14} className="text-text-tertiary" />
-              <PanelTitle>Reasoning</PanelTitle>
-            </PanelHeader>
-            <PanelBody className="p-5">
-              <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-wrap">{issue.description}</p>
-            </PanelBody>
-          </Panel>
-
-          {/* Failure Point */}
           {failurePoint != null && failurePoint.description != null && (
             <Panel>
               <PanelHeader className="flex items-center gap-2">
@@ -203,7 +198,6 @@ function IssueDetailPage() {
             </Panel>
           )}
 
-          {/* Evidence */}
           {evidence.length > 0 && (
             <Panel>
               <PanelHeader className="flex items-center gap-2">
@@ -214,22 +208,82 @@ function IssueDetailPage() {
                 </span>
               </PanelHeader>
               <PanelBody className="p-0">
-                {evidence.map((item, i) => (
-                  <div
-                    key={`${item.type}-${item.description.slice(0, 20)}`}
-                    className={`flex gap-4 px-5 py-4 ${i < evidence.length - 1 ? "border-b border-border-dim" : ""}`}
-                  >
-                    <Badge variant="outline" className="shrink-0 font-mono text-3xs uppercase">
-                      {EVIDENCE_TYPE_LABEL[item.type] ?? item.type}
-                    </Badge>
-                    <p className="text-sm leading-relaxed text-text-secondary">{item.description}</p>
-                  </div>
-                ))}
+                {evidence.map((item, i) => {
+                  const hasMedia = item.url != null && (item.type === "screenshot" || item.type === "video");
+                  const borderClass = i < evidence.length - 1 ? "border-b border-border-dim" : "";
+
+                  return hasMedia ? (
+                    <button
+                      key={`${item.type}-${item.description.slice(0, 20)}`}
+                      type="button"
+                      className={`flex w-full gap-4 px-5 py-4 text-left cursor-pointer transition-colors hover:bg-surface-base ${borderClass}`}
+                      onClick={() =>
+                        setActiveMedia({
+                          type: item.type as "screenshot" | "video",
+                          url: item.url!,
+                          description: item.description,
+                        })
+                      }
+                    >
+                      <Badge variant="secondary" className="shrink-0 font-mono text-3xs uppercase">
+                        {EVIDENCE_TYPE_LABEL[item.type] ?? item.type}
+                      </Badge>
+                      <p className="text-sm leading-relaxed text-text-secondary">{item.description}</p>
+                    </button>
+                  ) : (
+                    <div
+                      key={`${item.type}-${item.description.slice(0, 20)}`}
+                      className={`flex gap-4 px-5 py-4 ${borderClass}`}
+                    >
+                      <Badge variant="outline" className="shrink-0 font-mono text-3xs uppercase">
+                        {EVIDENCE_TYPE_LABEL[item.type] ?? item.type}
+                      </Badge>
+                      <p className="text-sm leading-relaxed text-text-secondary">{item.description}</p>
+                    </div>
+                  );
+                })}
               </PanelBody>
             </Panel>
           )}
+
+          <Panel>
+            <PanelHeader
+              role="button"
+              tabIndex={0}
+              aria-expanded={reasoningOpen}
+              className="flex cursor-pointer items-center gap-2 select-none"
+              onClick={() => setReasoningOpen((prev) => !prev)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setReasoningOpen((prev) => !prev);
+                }
+              }}
+            >
+              <ScalesIcon size={14} className="text-text-tertiary" />
+              <PanelTitle>Reasoning</PanelTitle>
+              <div className="ml-auto text-text-tertiary">
+                {reasoningOpen ? <CaretDownIcon size={14} /> : <CaretRightIcon size={14} />}
+              </div>
+            </PanelHeader>
+            {reasoningOpen && (
+              <PanelBody className="p-5">
+                <p className="text-xs leading-relaxed text-text-tertiary whitespace-pre-wrap">{issue.description}</p>
+              </PanelBody>
+            )}
+          </Panel>
         </div>
       </div>
+
+      {activeMedia != null && (
+        <EvidenceLightbox
+          open
+          onClose={() => setActiveMedia(undefined)}
+          type={activeMedia.type}
+          url={activeMedia.url}
+          description={activeMedia.description}
+        />
+      )}
     </div>
   );
 }
@@ -264,8 +318,8 @@ function IssueDetailSkeleton() {
           </div>
         </div>
         <div className="flex flex-1 flex-col gap-6">
-          <Skeleton className="h-48 w-full" />
           <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-48 w-full" />
         </div>
       </div>
     </div>

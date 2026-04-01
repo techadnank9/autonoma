@@ -15,6 +15,7 @@ export const reviewVerdictSchema = z.object({
             z.object({
                 type: z.enum(["conversation", "screenshot", "video", "step_output"]),
                 description: z.string(),
+                s3Key: z.string().optional().describe("S3 key for the associated media asset (screenshot or video)"),
             }),
         )
         .describe("Evidence supporting the verdict"),

@@ -35,7 +35,6 @@ export function TopSection() {
   const { data: testCases } = useSuspenseQuery(trpc.tests.list.queryOptions({ applicationId: app.id }));
   const { data: generations } = useSuspenseQuery(trpc.generations.list.queryOptions({ applicationId: app.id }));
   const { data: runs } = useSuspenseQuery(trpc.runs.list.queryOptions({ applicationId: app.id }));
-  const { data: issues } = useSuspenseQuery(trpc.issues.list.queryOptions({ applicationId: app.id }));
   const { data: bugs } = useSuspenseQuery(trpc.bugs.list.queryOptions({ applicationId: app.id }));
 
   const now = Date.now();
@@ -45,11 +44,6 @@ export function TopSection() {
   const bugsThisMonth = countInRange(bugs, (b) => b.firstSeenAt, thisMonthStart, now);
   const bugSparkline = bucketByDay(bugs, (b) => b.firstSeenAt, 30);
   const bugChange = monthOverMonthChange(bugs, (b) => b.firstSeenAt);
-
-  // Issues
-  const issuesThisMonth = countInRange(issues, (i) => i.createdAt, thisMonthStart, now);
-  const issueSparkline = bucketByDay(issues, (i) => i.createdAt, 30);
-  const issueChange = monthOverMonthChange(issues, (i) => i.createdAt);
 
   // Runs - use startedAt, defaulting to epoch for pending runs
   const getRunDate = (r: (typeof runs)[number]) => r.startedAt ?? new Date(0);
@@ -71,28 +65,16 @@ export function TopSection() {
     <Panel>
       <PanelBody className="px-6 py-5">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
-          <MetricCard>
+          <MetricCard className="col-span-2">
             <MetricLabel>Bugs</MetricLabel>
             <div className="flex items-end justify-between gap-2">
-              <MetricValue>
+              <MetricValue className="text-5xl">
                 {bugsThisMonth}
                 <MetricUnit>THIS MONTH</MetricUnit>
               </MetricValue>
               <Sparkline data={bugSparkline} color="var(--status-critical)" filled className="mb-1" />
             </div>
             <TrendBadge change={bugChange} invertColor />
-          </MetricCard>
-
-          <MetricCard>
-            <MetricLabel>Issues</MetricLabel>
-            <div className="flex items-end justify-between gap-2">
-              <MetricValue>
-                {issuesThisMonth}
-                <MetricUnit>THIS MONTH</MetricUnit>
-              </MetricValue>
-              <Sparkline data={issueSparkline} color="var(--status-critical)" filled className="mb-1" />
-            </div>
-            <TrendBadge change={issueChange} invertColor />
           </MetricCard>
 
           <MetricCard>
@@ -137,8 +119,8 @@ export function TopSectionSkeleton() {
     <Panel>
       <PanelBody className="px-6 py-5">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-5">
-          {["bugs", "issues", "runs", "generations", "tests"].map((id) => (
-            <MetricCard key={id}>
+          {["bugs", "runs", "generations", "tests"].map((id) => (
+            <MetricCard key={id} className={id === "bugs" ? "col-span-2" : undefined}>
               <MetricLabel>
                 <span className="inline-block h-3 w-16 animate-pulse bg-surface-raised" />
               </MetricLabel>

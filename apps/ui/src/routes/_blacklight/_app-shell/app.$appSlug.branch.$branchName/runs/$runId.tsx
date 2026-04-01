@@ -434,10 +434,14 @@ function StepCard({ step, isLast, onImageClick }: { step: RunStep; isLast: boole
           {screenshot != null && (
             <div
               role="button"
-              className="relative w-52 shrink-0 overflow-hidden border-r border-border-dim bg-surface-base cursor-zoom-in"
+              className="relative aspect-video w-52 shrink-0 overflow-hidden border-r border-border-dim bg-surface-base cursor-zoom-in"
               onClick={onImageClick}
             >
-              <img src={screenshot} alt={`Step ${step.order}`} className="h-full w-full object-cover" />
+              <img
+                src={screenshot}
+                alt={`Step ${step.order}`}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
             </div>
           )}
           <div className="flex flex-1 flex-col justify-center gap-2 px-4 py-3">

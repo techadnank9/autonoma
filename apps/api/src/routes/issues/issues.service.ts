@@ -1,12 +1,17 @@
 import type { PrismaClient } from "@autonoma/db";
 import { GenerationStatus, RunStatus } from "@autonoma/db";
+import type { StorageProvider } from "@autonoma/storage";
 import { BadRequestError, ConflictError, NotFoundError } from "../../api-errors";
 import type { TriggerGenerationReview, TriggerRunReview } from "../build-services";
 import { Service } from "../service";
+import { signEvidenceUrls } from "../sign-evidence-urls";
+
+type EvidenceItem = { type: string; description: string; s3Key?: string };
 
 export class IssuesService extends Service {
     constructor(
         private readonly db: PrismaClient,
+        private readonly storageProvider: StorageProvider,
         private readonly triggerGenerationReview: TriggerGenerationReview,
         private readonly triggerRunReview: TriggerRunReview,
     ) {
@@ -187,12 +192,13 @@ export class IssuesService extends Service {
         type AnalysisJson =
             | {
                   failurePoint?: { stepOrder?: number; description?: string };
-                  evidence?: Array<{ type: string; description: string }>;
+                  evidence?: EvidenceItem[];
               }
             | undefined;
 
         if (issue.generationReview != null) {
             const analysis = issue.generationReview.analysis as AnalysisJson;
+            const evidence = await signEvidenceUrls(analysis?.evidence ?? [], this.storageProvider);
 
             return {
                 id: issue.id,
@@ -208,7 +214,7 @@ export class IssuesService extends Service {
                     reasoning: issue.generationReview.reasoning,
                     createdAt: issue.generationReview.createdAt,
                     failurePoint: analysis?.failurePoint,
-                    evidence: analysis?.evidence ?? [],
+                    evidence,
                 },
                 source: "generation" as const,
                 generation: {
@@ -227,6 +233,7 @@ export class IssuesService extends Service {
         const runReview = issue.runReview;
         if (runReview == null) throw new NotFoundError();
         const analysis = runReview.analysis as AnalysisJson;
+        const evidence = await signEvidenceUrls(analysis?.evidence ?? [], this.storageProvider);
 
         return {
             id: issue.id,
@@ -242,7 +249,7 @@ export class IssuesService extends Service {
                 reasoning: runReview.reasoning,
                 createdAt: runReview.createdAt,
                 failurePoint: analysis?.failurePoint,
-                evidence: analysis?.evidence ?? [],
+                evidence,
             },
             source: "run" as const,
             run: {

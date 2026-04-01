@@ -2,8 +2,6 @@ import type { RouterOutputs } from "lib/trpc";
 
 export type Generation = RouterOutputs["generations"]["list"][number];
 export type Run = RouterOutputs["runs"]["list"][number];
-export type Issue = RouterOutputs["issues"]["list"][number];
-
 // ─── Date helpers ────────────────────────────────────────────────────────────
 
 /** Bucket items by day over the last N days. Returns an array of daily counts (oldest first). */

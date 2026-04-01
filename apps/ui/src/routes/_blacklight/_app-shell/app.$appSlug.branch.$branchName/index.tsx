@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ensureAPIQueryData } from "lib/query/api-queries";
 import { trpc } from "lib/trpc";
 import { Suspense } from "react";
-import { IssuesChart, IssuesChartSkeleton } from "./-home/issues-chart";
+import { BugsChart, BugsChartSkeleton } from "./-home/bugs-chart";
 import { LastGenerationsTable, LastGenerationsTableSkeleton } from "./-home/last-generations-table";
 import { RecentRunsTable, RecentRunsTableSkeleton } from "./-home/recent-runs-table";
 import { TopSection, TopSectionSkeleton } from "./-home/top-section";
@@ -15,7 +15,6 @@ export const Route = createFileRoute("/_blacklight/_app-shell/app/$appSlug/branc
       ensureAPIQueryData(context.queryClient, trpc.tests.list.queryOptions({ applicationId: app.id })),
       ensureAPIQueryData(context.queryClient, trpc.generations.list.queryOptions({ applicationId: app.id })),
       ensureAPIQueryData(context.queryClient, trpc.runs.list.queryOptions({ applicationId: app.id })),
-      ensureAPIQueryData(context.queryClient, trpc.issues.list.queryOptions({ applicationId: app.id })),
       ensureAPIQueryData(context.queryClient, trpc.bugs.list.queryOptions({ applicationId: app.id })),
     ]);
   },
@@ -34,8 +33,8 @@ function OverviewPage() {
         <TopSection />
       </Suspense>
 
-      <Suspense fallback={<IssuesChartSkeleton />}>
-        <IssuesChart />
+      <Suspense fallback={<BugsChartSkeleton />}>
+        <BugsChart />
       </Suspense>
 
       <div className="grid min-h-75 grid-cols-1 gap-6 lg:grid-cols-2">

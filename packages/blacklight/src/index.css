@@ -61,14 +61,15 @@
 
   /* ── Text tiers ── */
   --text-primary: #EDEDED;
-  --text-secondary: #888888;
-  --text-tertiary: #555555;
+  --text-secondary: #898989;
+  --text-tertiary: #707070;
 
   /* ── Status colors ── */
   --status-critical: #FF3333;
   --status-high: #FF8800;
   --status-warn: #FFCC00;
   --status-success: #00CC66;
+  --status-pending: #38BDF8;
 
   /* ── Accent glow ── */
   --accent-glow: rgba(194, 232, 18, 0.4);
@@ -97,7 +98,7 @@
   --muted-foreground: #60507A;
   --accent: #C2E812;
   --accent-foreground: #0F0326;
-  --destructive: #D90429;
+  --destructive: #C50326;
   --border: rgba(15, 3, 38, 0.15);
   --input: rgba(15, 3, 38, 0.3);
   --ring: #C2E812;
@@ -129,16 +130,17 @@
   --text-secondary: #2E1E4D;
   --text-tertiary: #60507A;
 
-  --status-critical: #D90429;
-  --status-high: #C85000;
-  --status-warn: #A67C00;
+  --status-critical: #C50326;
+  --status-high: #A84400;
+  --status-warn: #806000;
   --status-success: #2A6B2A;
+  --status-pending: #0369A1;
 
   --accent-glow: rgba(194, 232, 18, 0.4);
   --accent-dim: rgba(42, 16, 82, 0.05);
 
   /* Darker lime for use on low-contrast surfaces */
-  --primary-contrast: #7A9E00;
+  --primary-contrast: #567000;
 
   /* Dark violet for enhanced contrast on lavender */
   --violet-accent: #4C1D95;
@@ -219,6 +221,7 @@
   --color-status-high: var(--status-high);
   --color-status-warn: var(--status-warn);
   --color-status-success: var(--status-success);
+  --color-status-pending: var(--status-pending);
 
   /* Accent effects */
   --color-accent-glow: var(--accent-glow);
@@ -293,6 +296,11 @@
     }
     ::-webkit-scrollbar-thumb:hover {
       background: var(--border-highlight);
+    }
+
+    ::selection {
+      background: var(--color-primary);
+      color: var(--color-primary-foreground);
     }
   }
 }

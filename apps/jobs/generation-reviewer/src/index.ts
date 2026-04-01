@@ -88,6 +88,16 @@ async function main() {
 
     logger.info("Persisting review result", { verdict: verdict.verdict });
 
+    const enrichedEvidence = verdict.evidence.map((item) => {
+        if (item.type === "screenshot" && data.finalScreenshotKey != null) {
+            return { ...item, s3Key: data.finalScreenshotKey };
+        }
+        if (item.type === "video" && data.videoUrl != null) {
+            return { ...item, s3Key: data.videoUrl };
+        }
+        return item;
+    });
+
     await db.$transaction(async (tx) => {
         const review = await tx.generationReview.update({
             where: { generationId: data.generationId },
@@ -97,7 +107,7 @@ async function main() {
                 reasoning: verdict.reasoning,
                 analysis: {
                     failurePoint: verdict.failurePoint,
-                    evidence: verdict.evidence,
+                    evidence: enrichedEvidence,
                 },
             },
         });
