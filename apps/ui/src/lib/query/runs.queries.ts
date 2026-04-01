@@ -1,4 +1,4 @@
-import { type QueryClient, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { type QueryClient, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ensureAPIQueryData, useAPIMutation } from "lib/query/api-queries";
 import { trpc } from "lib/trpc";
 import { useCurrentApplication } from "routes/_blacklight/_app-shell/-use-current-application";
@@ -19,6 +19,19 @@ export function useRunDetail(
 
 export async function ensureRunDetailData(queryClient: QueryClient, runId: string) {
     await ensureAPIQueryData(queryClient, trpc.runs.detail.queryOptions({ runId }));
+}
+
+export function useBranchRuns(applicationId: string, snapshotId?: string) {
+    return useQuery({
+        ...trpc.runs.list.queryOptions({ applicationId, snapshotId }),
+        enabled: snapshotId != null,
+        refetchInterval: (query) => {
+            const data = query.state.data;
+            if (data == null) return false;
+            const hasActive = data.some((r) => r.status === "pending" || r.status === "running");
+            return hasActive ? 5000 : false;
+        },
+    });
 }
 
 export function useRunTest() {

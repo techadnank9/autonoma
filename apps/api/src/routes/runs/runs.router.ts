@@ -9,9 +9,9 @@ export const runsRouter = router({
         ),
 
     list: protectedProcedure
-        .input(z.object({ applicationId: z.string().optional() }).optional())
+        .input(z.object({ applicationId: z.string().optional(), snapshotId: z.string().optional() }).optional())
         .query(({ ctx: { services, organizationId }, input }) =>
-            services.runs.listRuns(organizationId, input?.applicationId),
+            services.runs.listRuns(organizationId, input?.applicationId, input?.snapshotId),
         ),
 
     detail: protectedProcedure

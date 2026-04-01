@@ -29,94 +29,67 @@ const STATE_DURATION: Record<AgentCubeState, string> = {
   idle: "22s",
   processing: "7s",
   analyzing: "4.5s",
-  working: "2.2s",
+  working: "4s",
   success: "5s",
   failed: "18s",
 };
 
-/** Base CSS color expression per state */
+/** Hex color per state */
 const STATE_COLOR: Record<AgentCubeState, string> = {
-  idle: "var(--primary)",
-  processing: "var(--primary)",
-  analyzing: "var(--primary)",
-  working: "var(--primary)",
-  success: "var(--status-success)",
-  failed: "var(--status-critical)",
+  idle: "#a3b818", // primary (lime)
+  processing: "#38bdf8", // sky-400
+  analyzing: "#fbbf24", // amber-400
+  working: "#a3e635", // lime-400
+  success: "#4ade80", // green-400
+  failed: "#f87171", // red-400
 };
 
-/**
- * Per-state edge opacity (0–1). Scaled per-face for depth perception.
- * No filled backgrounds — pure wireframe avoids GPU compositing layer bleed.
- */
+/** Edge opacity per state */
 const STATE_OPACITY: Record<AgentCubeState, number> = {
-  idle: 0.18,
-  processing: 0.5,
-  analyzing: 0.7,
-  working: 0.95,
-  success: 0.72,
-  failed: 0.75,
+  idle: 0.25,
+  processing: 0.6,
+  analyzing: 0.75,
+  working: 0.9,
+  success: 0.7,
+  failed: 0.7,
 };
-
-/**
- * Per-face depth multipliers — front is brightest, bottom is dimmest.
- * Order: front, back, left, right, top, bottom.
- */
-const FACE_MULTIPLIERS = [0.8, 0.38, 0.52, 0.52, 0.42, 0.28] as const;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+/**
+ * Flat 2D wireframe cube using two overlapping squares with offset rotation.
+ * No `preserve-3d` or `perspective` - avoids Chromium GPU compositing bugs.
+ */
 export function AgentCube({ state = "idle", size = 20, className }: AgentCubeProps) {
-  const half = size / 2;
   const color = STATE_COLOR[state];
   const duration = STATE_DURATION[state];
-  const edgeBase = STATE_OPACITY[state];
+  const opacity = STATE_OPACITY[state];
 
-  const faceTransforms = [
-    `rotateY(0deg)   translateZ(${half}px)`, // front
-    `rotateY(180deg) translateZ(${half}px)`, // back
-    `rotateY(-90deg) translateZ(${half}px)`, // left
-    `rotateY(90deg)  translateZ(${half}px)`, // right
-    `rotateX(90deg)  translateZ(${half}px)`, // top
-    `rotateX(-90deg) translateZ(${half}px)`, // bottom
-  ] as const;
+  /** Inset for the inner square (gives depth illusion) */
+  const inset = Math.round(size * 0.18);
 
   return (
-    <div className={cn("shrink-0", className)} style={{ width: size, height: size }}>
-      {/* Perspective wrapper */}
+    <div className={cn("shrink-0", className)} style={{ width: size, height: size, position: "relative" }}>
+      {/* Outer square - rotates forward */}
       <div
         style={{
-          width: "100%",
-          height: "100%",
-          perspective: `${size * 2.8}px`,
+          position: "absolute",
+          inset: 0,
+          border: `1px solid ${color}`,
+          opacity,
+          animation: `bl-cube-spin ${duration} linear infinite`,
         }}
-      >
-        {/* Spinning cube */}
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "relative",
-            transformStyle: "preserve-3d",
-            animation: `bl-cube-spin ${duration} linear infinite`,
-          }}
-        >
-          {faceTransforms.map((transform, i) => {
-            const mul = FACE_MULTIPLIERS[i] ?? 0.5;
-            const edgePct = Math.round(mul * edgeBase * 100);
-            return (
-              <div
-                key={transform}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  border: `1px solid color-mix(in srgb, ${color} ${edgePct}%, transparent)`,
-                  transform,
-                }}
-              />
-            );
-          })}
-        </div>
-      </div>
+      />
+      {/* Inner square - rotates backward, offset creates depth */}
+      <div
+        style={{
+          position: "absolute",
+          inset,
+          border: `1px solid ${color}`,
+          opacity: opacity * 0.5,
+          animation: `bl-cube-spin ${duration} linear infinite reverse`,
+        }}
+      />
     </div>
   );
 }

@@ -7,12 +7,13 @@ export type Run = RouterOutputs["runs"]["list"][number];
 /** Bucket items by day over the last N days. Returns an array of daily counts (oldest first). */
 export function bucketByDay<T>(items: T[], getDate: (item: T) => Date | string, days: number): number[] {
     const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const buckets = new Array<number>(days).fill(0);
 
     for (const item of items) {
         const date = new Date(getDate(item));
-        const diffMs = now.getTime() - date.getTime();
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const itemDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const diffDays = Math.round((todayStart.getTime() - itemDay.getTime()) / (1000 * 60 * 60 * 24));
         if (diffDays >= 0 && diffDays < days) {
             const index = days - 1 - diffDays;
             const current = buckets[index] ?? 0;
@@ -41,11 +42,15 @@ export function countInRange<T>(
 /** Calculate month-over-month change. Returns percentage (e.g. -20 means 20% decrease). */
 export function monthOverMonthChange<T>(items: T[], getDate: (item: T) => Date | string): number | undefined {
     const now = new Date();
-    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const thisMonth = countInRange(items, getDate, thisMonthStart, now.getTime());
-    const lastMonth = countInRange(items, getDate, lastMonthStart, thisMonthStart);
+    // Compare equivalent elapsed time so Apr 1 compares against Mar 1, not all of March
+    const elapsedMs = now.getTime() - thisMonthStart.getTime();
+    const lastMonthEquivalentEnd = new Date(lastMonthStart.getTime() + elapsedMs);
+
+    const thisMonth = countInRange(items, getDate, thisMonthStart.getTime(), now.getTime());
+    const lastMonth = countInRange(items, getDate, lastMonthStart.getTime(), lastMonthEquivalentEnd.getTime());
 
     if (lastMonth === 0) return thisMonth > 0 ? 100 : undefined;
     return Math.round(((thisMonth - lastMonth) / lastMonth) * 100);

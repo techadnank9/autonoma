@@ -1,13 +1,4 @@
-import {
-  AGENT_CUBE_STATE_LABEL,
-  AgentCube,
-  type AgentCubeState,
-  Button,
-  Separator,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@autonoma/blacklight";
+import { Button, Separator, Tooltip, TooltipContent, TooltipTrigger } from "@autonoma/blacklight";
 import { BugIcon } from "@phosphor-icons/react/Bug";
 import { BugBeetleIcon } from "@phosphor-icons/react/BugBeetle";
 import { CaretLineLeftIcon } from "@phosphor-icons/react/CaretLineLeft";
@@ -29,6 +20,7 @@ import { CHECKOUT_TYPE_SUBSCRIPTION } from "lib/billing/formatters";
 import { useCreateCheckoutSession } from "lib/query/billing.queries";
 import { trpc } from "lib/trpc";
 import { useEffect, useState } from "react";
+import { SidebarAgentStatus } from "./sidebar-agent-status";
 
 const SIDEBAR_STORAGE_KEY = "autonoma:sidebar-collapsed";
 
@@ -131,43 +123,6 @@ function SidebarNavItem({
         <TooltipTrigger render={<div />}>{inner}</TooltipTrigger>
         <TooltipContent side="right" align="start">
           {label}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return inner;
-}
-
-/**
- * Persistent Agent Cube widget shown at the bottom of the sidebar.
- * The `state` prop will eventually be driven by live generation status;
- * for now it defaults to `idle`.
- */
-function _SidebarAgentItem({ collapsed, state = "idle" }: { collapsed: boolean; state?: AgentCubeState }) {
-  const inner = (
-    <div
-      className={`flex items-center border-b border-border-dim transition-colors ${
-        collapsed ? "justify-center px-2 py-3" : "gap-4 px-4 py-3"
-      }`}
-    >
-      <AgentCube state={state} size={18} />
-      {!collapsed && (
-        <div className="min-w-0 flex-1">
-          <p className="text-2xs font-medium text-text-secondary">Autonoma Agent</p>
-          <p className="font-mono text-3xs text-text-tertiary">{AGENT_CUBE_STATE_LABEL[state]}</p>
-        </div>
-      )}
-    </div>
-  );
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger render={<div />}>{inner}</TooltipTrigger>
-        <TooltipContent side="right">
-          <span className="font-medium">Autonoma Agent</span>
-          <span className="ml-1.5 text-text-tertiary">{AGENT_CUBE_STATE_LABEL[state]}</span>
         </TooltipContent>
       </Tooltip>
     );
@@ -353,6 +308,7 @@ function Sidebar({ collapsed, onToggleCollapsed, onFeedback }: SidebarProps) {
 
       {/* Footer */}
       <div className="border-t border-border-dim">
+        <SidebarAgentStatus collapsed={collapsed} />
         <SidebarUpgradeButton collapsed={collapsed} />
 
         {isAdmin && !isAdminPage && (

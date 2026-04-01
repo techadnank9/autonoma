@@ -4,6 +4,8 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useAuth } from "lib/auth";
 import { Suspense } from "react";
 import { useCurrentBranch } from "../-use-current-branch";
+import { useBranchActivity } from "../../-layout/use-branch-activity";
+import { AgentGeneratingView } from "./-agent-generating-view";
 import { TestsTreeProvider } from "./-tests-tree/tests-tree-context";
 import { TestsTreePanel } from "./-tests-tree/tests-tree-panel";
 
@@ -28,6 +30,24 @@ function TestsPage() {
   const testCount = branch.activeSnapshot.testCaseAssignments.length;
   const hasPending = branch.pendingSnapshotId != null;
   const { isAdmin } = useAuth();
+  const { state, activities } = useBranchActivity();
+
+  const isGenerating = testCount === 0 && (state === "working" || activities.some((a) => a.type === "generation"));
+
+  if (isGenerating) {
+    return (
+      <div className="flex flex-col gap-6">
+        <header>
+          <h1 className="text-2xl font-medium tracking-tight text-text-primary">Tests</h1>
+          <p className="mt-1 font-mono text-xs text-text-secondary">0 tests on branch {branch.name}</p>
+        </header>
+
+        <div className="flex min-h-[400px] border border-border-mid bg-surface-raised">
+          <AgentGeneratingView activities={activities} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TestsTreeProvider>

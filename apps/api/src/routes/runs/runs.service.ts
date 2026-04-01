@@ -210,12 +210,13 @@ export class RunsService extends Service {
         };
     }
 
-    async listRuns(organizationId: string, applicationId?: string) {
-        this.logger.info("Listing runs", { organizationId, applicationId });
+    async listRuns(organizationId: string, applicationId?: string, snapshotId?: string) {
+        this.logger.info("Listing runs", { organizationId, applicationId, snapshotId });
 
         const runs = await this.db.run.findMany({
             where: {
                 assignment: {
+                    ...(snapshotId != null ? { snapshotId } : {}),
                     testCase: {
                         application: { organizationId },
                         ...(applicationId != null ? { applicationId } : {}),

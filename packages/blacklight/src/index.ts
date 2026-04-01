@@ -5,6 +5,12 @@ export {
     type AgentCubeState,
     type AgentCubeProps,
 } from "./components/ui/agent-cube";
+export {
+    AgentIndicator,
+    AGENT_INDICATOR_STATE_LABEL,
+    type AgentIndicatorState,
+    type AgentIndicatorProps,
+} from "./components/ui/agent-indicator";
 export { Alert, AlertTitle, AlertDescription, alertVariants } from "./components/ui/alert";
 export { Badge, badgeVariants } from "./components/ui/badge";
 export { Button, buttonVariants } from "./components/ui/button";
