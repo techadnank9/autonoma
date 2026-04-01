@@ -22,12 +22,12 @@ export class DisabledBillingService implements BillingService {
         return customer;
     }
 
-    createCheckoutSession(organizationId: string, type: BillingCheckoutType) {
-        return this.billingCustomerService.createCheckoutSession(organizationId, type);
+    createCheckoutSession(organizationId: string, type: BillingCheckoutType, returnPath?: string) {
+        return this.billingCustomerService.createCheckoutSession(organizationId, type, returnPath);
     }
 
-    createPortalSession(organizationId: string) {
-        return this.billingCustomerService.createPortalSession(organizationId);
+    createPortalSession(organizationId: string, returnPath?: string) {
+        return this.billingCustomerService.createPortalSession(organizationId, returnPath);
     }
 
     getBillingStatus(organizationId: string) {

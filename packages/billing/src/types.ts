@@ -71,8 +71,12 @@ export type BillingStatusResult = {
 
 export interface BillingService {
     getOrCreateCustomer(organizationId: string, orgName: string): Promise<BillingCustomer>;
-    createCheckoutSession(organizationId: string, type: BillingCheckoutType): Promise<BillingSessionResult>;
-    createPortalSession(organizationId: string): Promise<BillingSessionResult>;
+    createCheckoutSession(
+        organizationId: string,
+        type: BillingCheckoutType,
+        returnPath?: string,
+    ): Promise<BillingSessionResult>;
+    createPortalSession(organizationId: string, returnPath?: string): Promise<BillingSessionResult>;
     getBillingStatus(organizationId: string): Promise<BillingStatusResult>;
     updateAutoTopUp(organizationId: string, enabled: boolean, threshold: number): Promise<void>;
     checkCreditsGate(

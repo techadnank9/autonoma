@@ -13,6 +13,42 @@ export class BillingCustomerService extends Service {
         super();
     }
 
+    private buildAbsoluteAppUrl(pathWithQuery: string): string {
+        return new URL(pathWithQuery, env.APP_URL).toString();
+    }
+
+    private buildCheckoutSuccessUrl(pathWithQuery: string): string {
+        const url = new URL(pathWithQuery, env.APP_URL);
+        url.searchParams.set("session_id", "{CHECKOUT_SESSION_ID}");
+        return url.toString();
+    }
+
+    private resolveCheckoutReturnPaths(returnPath?: string): { cancelPath: string; successPath: string } {
+        const fallbackPath = "/billing";
+        if (returnPath == null || returnPath.trim().length === 0) {
+            return { cancelPath: fallbackPath, successPath: fallbackPath };
+        }
+
+        const normalizedPath = returnPath.trim();
+        if (!normalizedPath.startsWith("/") || normalizedPath.startsWith("//")) {
+            return { cancelPath: fallbackPath, successPath: fallbackPath };
+        }
+
+        const appBranchMatch = normalizedPath.match(/^\/app\/([^/]+)\/branch\/([^/?#]+)/);
+        if (appBranchMatch != null) {
+            return {
+                cancelPath: normalizedPath,
+                successPath: `/app/${appBranchMatch[1]}/branch/${appBranchMatch[2]}/billing`,
+            };
+        }
+
+        if (normalizedPath.startsWith("/billing")) {
+            return { cancelPath: normalizedPath, successPath: fallbackPath };
+        }
+
+        return { cancelPath: normalizedPath, successPath: fallbackPath };
+    }
+
     async getOrCreateCustomer(organizationId: string, orgName: string) {
         const existing = await ensureBillingProvisioning(this.db, organizationId);
         if (existing.stripeCustomerId != null) return existing;
@@ -48,7 +84,7 @@ export class BillingCustomerService extends Service {
         }
     }
 
-    async createCheckoutSession(organizationId: string, type: BillingCheckoutType) {
+    async createCheckoutSession(organizationId: string, type: BillingCheckoutType, returnPath?: string) {
         const org = await this.db.organization.findUnique({
             where: { id: organizationId },
             select: { name: true },
@@ -60,7 +96,9 @@ export class BillingCustomerService extends Service {
             throw new Error(`Stripe customer missing for organization ${organizationId}`);
         }
         const stripe = getStripe();
-        const appUrl = env.APP_URL;
+        const { cancelPath, successPath } = this.resolveCheckoutReturnPaths(returnPath);
+        const cancelUrl = this.buildAbsoluteAppUrl(cancelPath);
+        const successUrl = this.buildCheckoutSuccessUrl(successPath);
 
         if (type === BILLING_CHECKOUT_TYPES.SUBSCRIPTION) {
             if (env.STRIPE_SUBSCRIPTION_PRICE_ID == null) {
@@ -72,8 +110,8 @@ export class BillingCustomerService extends Service {
                 customer: customer.stripeCustomerId,
                 line_items: [{ price: env.STRIPE_SUBSCRIPTION_PRICE_ID, quantity: 1 }],
                 payment_method_collection: "always",
-                success_url: `${appUrl}/billing?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${appUrl}/billing`,
+                success_url: successUrl,
+                cancel_url: cancelUrl,
             });
 
             this.logger.info("Created subscription checkout session", { organizationId, sessionId: session.id });
@@ -92,15 +130,15 @@ export class BillingCustomerService extends Service {
                 setup_future_usage: "off_session",
                 metadata: { type: BILLING_PAYMENT_INTENT_TYPES.TOPUP, organizationId },
             },
-            success_url: `${appUrl}/billing?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${appUrl}/billing`,
+            success_url: successUrl,
+            cancel_url: cancelUrl,
         });
 
         this.logger.info("Created topup checkout session", { organizationId, sessionId: session.id });
         return { url: session.url };
     }
 
-    async createPortalSession(organizationId: string) {
+    async createPortalSession(organizationId: string, returnPath?: string) {
         const org = await this.db.organization.findUnique({
             where: { id: organizationId },
             select: { name: true },
@@ -112,10 +150,12 @@ export class BillingCustomerService extends Service {
             throw new Error(`Stripe customer missing for organization ${organizationId}`);
         }
 
+        const { cancelPath } = this.resolveCheckoutReturnPaths(returnPath);
+        const returnUrl = this.buildAbsoluteAppUrl(cancelPath);
         const stripe = getStripe();
         const session = await stripe.billingPortal.sessions.create({
             customer: customer.stripeCustomerId,
-            return_url: `${env.APP_URL}/billing`,
+            return_url: returnUrl,
         });
 
         this.logger.info("Created billing portal session", { organizationId });

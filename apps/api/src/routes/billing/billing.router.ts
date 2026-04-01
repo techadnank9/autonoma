@@ -10,14 +10,21 @@ const billingRouterImpl = router({
         .input(
             z.object({
                 type: z.enum([BILLING_CHECKOUT_TYPES.SUBSCRIPTION, BILLING_CHECKOUT_TYPES.TOPUP]),
+                returnPath: z.string().max(500).optional(),
             }),
         )
         .mutation(({ ctx: { services, organizationId }, input }) =>
-            services.billing.createCheckoutSession(organizationId, input.type),
+            services.billing.createCheckoutSession(organizationId, input.type, input.returnPath),
         ),
-    createPortalSession: protectedProcedure.mutation(({ ctx: { services, organizationId } }) =>
-        services.billing.createPortalSession(organizationId),
-    ),
+    createPortalSession: protectedProcedure
+        .input(
+            z.object({
+                returnPath: z.string().max(500).optional(),
+            }),
+        )
+        .mutation(({ ctx: { services, organizationId }, input }) =>
+            services.billing.createPortalSession(organizationId, input.returnPath),
+        ),
     updateAutoTopUp: protectedProcedure
         .input(
             z.object({

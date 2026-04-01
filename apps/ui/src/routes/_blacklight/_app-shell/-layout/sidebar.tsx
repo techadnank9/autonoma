@@ -141,8 +141,9 @@ function SidebarUpgradeButton({ collapsed }: { collapsed: boolean }) {
   if (data == null || isSubscribed) return null;
 
   function handleUpgrade() {
+    const returnPath = `${window.location.pathname}${window.location.search}`;
     createCheckout.mutate(
-      { type: CHECKOUT_TYPE_SUBSCRIPTION },
+      { type: CHECKOUT_TYPE_SUBSCRIPTION, returnPath },
       {
         onSuccess: (result) => {
           if (result.url == null) return;

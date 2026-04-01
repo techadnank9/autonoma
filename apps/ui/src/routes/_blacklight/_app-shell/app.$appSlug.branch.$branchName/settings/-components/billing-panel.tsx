@@ -63,8 +63,9 @@ export function BillingPanel() {
     (autoTopUpEnabled !== data.autoTopUpEnabled || thresholdValue !== data.autoTopUpThreshold);
 
   function handleCreateCheckout(type: CheckoutType) {
+    const returnPath = `${window.location.pathname}${window.location.search}`;
     createCheckout.mutate(
-      { type },
+      { type, returnPath },
       {
         onSuccess: (result) => {
           if (result.url == null) return;
@@ -75,12 +76,16 @@ export function BillingPanel() {
   }
 
   function handleOpenPortal() {
-    createPortal.mutate(undefined, {
-      onSuccess: (result) => {
-        if (result.url == null) return;
-        window.location.href = result.url;
+    const returnPath = `${window.location.pathname}${window.location.search}`;
+    createPortal.mutate(
+      { returnPath },
+      {
+        onSuccess: (result) => {
+          if (result.url == null) return;
+          window.location.href = result.url;
+        },
       },
-    });
+    );
   }
 
   function handleSaveAutoTopUp() {
