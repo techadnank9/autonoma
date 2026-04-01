@@ -2,7 +2,7 @@ import { processWebhookEvent } from "@autonoma/billing";
 import { logger } from "@autonoma/logger";
 import type Stripe from "stripe";
 import { env } from "../env.ts";
-import { type StripeWebhookWorkflowInput, stripeWebhookWorkflow } from "../workflows/stripe-webhook.workflow.ts";
+import type { StripeWebhookWorkflowInput } from "../workflows/stripe-webhook.workflow.ts";
 
 type WorkflowApi = {
     start: (
@@ -20,6 +20,7 @@ async function loadWorkflowApi(): Promise<WorkflowApi> {
 }
 
 async function dispatchWithWorkflow(event: Stripe.Event): Promise<void> {
+    const { stripeWebhookWorkflow } = await import("../workflows/stripe-webhook.workflow.ts");
     const processUrl =
         env.STRIPE_INTERNAL_WEBHOOK_PROCESS_URL ?? `http://localhost:${env.API_PORT}/v1/stripe/process-webhook`;
     const input: StripeWebhookWorkflowInput = {
